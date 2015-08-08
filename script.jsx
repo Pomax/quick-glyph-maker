@@ -59,12 +59,12 @@ var Grid = React.createClass({
     var snapped = this.getPosition();
     return <g>
       { this.generateDivisions() }
-      <circle r={10} cx={snapped.x} cy={snapped.y}/>
+      <circle r={10} cx={snapped.x} cy={snapped.y} fill="none" stroke="black"/>
     </g>;
   }
 });
 
-var LineShapes = React.createClass({
+var Shapes = React.createClass({
   getInitialState: function() {
     return {
       points: this.props.points || [],
@@ -93,7 +93,11 @@ var LineShapes = React.createClass({
 
     // already committed shape:
     var polyline = points.map(function(p) {
-      return ['L',p.x,p.y].join(' ');
+      if (!p.c) {
+        return ['L',p.x,p.y].join(' ');
+      } else {
+        // TODO: arc mode
+      }
     });
 
     var p0 = points[0];
@@ -122,6 +126,8 @@ var LineShapes = React.createClass({
   }
 });
 
+
+
 var App = React.createClass({
   getInitialState: function() {
     return {
@@ -139,7 +145,7 @@ var App = React.createClass({
     var temp = !this.mark ? false : this.temp;
 
     var contours = this.state.contours.map(function(points) {
-      return <LineShapes width={w} height={h} points={points} closed={true} />
+      return <Shapes width={w} height={h} points={points} closed={true} />
     });
 
     return (
@@ -152,7 +158,7 @@ var App = React.createClass({
         <svg width={w} height={h}>
           <Grid ref="grid" width={w} height={h} divisions={this.state.divisions} mouseX={mx} mouseY={my} />
           { contours }
-          <LineShapes ref="lines" width={w} height={h} temp={temp} />
+          <Shapes ref="lines" width={w} height={h} temp={temp} />
         </svg>
         <svg width={w} height={h}>
           <path fill="rgba(0,0,0,0.3)" stroke="none" d={this.state.dpreview}/>
