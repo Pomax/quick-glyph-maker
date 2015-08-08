@@ -6,6 +6,14 @@ body {
   justify-content: center;
 }
 
+p {
+  flex: 1;
+  left: 0;
+  right: 0;
+  text-align: center;
+  position: absolute;
+}
+
 #app {
   position: relative;
   width: 600px;
