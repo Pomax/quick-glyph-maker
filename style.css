@@ -1,0 +1,31 @@
+body {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  justify-content: center;
+}
+
+#app {
+  position: relative;
+  width: 600px;
+  height: 600px;
+  border: 1px solid black;
+  margin-top: 3em;
+}
+
+#app div svg {
+  position:absolute;
+  top: 0;
+  left: 0;
+}
+
+#app div div.controls {
+  position: absolute;
+  top: calc(100% + 1em);
+}
+
+#app div.dpreview {
+  position: absolute;
+  top: calc(100% + 4em);
+}
