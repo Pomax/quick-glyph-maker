@@ -26,20 +26,15 @@ function union(shape1, shape2) {
   });
   subj_paths.push(subj_path);
 
-  var result = pathsShapeUnion(subj_paths, shape2);
-  return result.map(function(contour) {
-    return contour.map(function(p) {
-      return {x:p.X, y:p.Y};
-    });
-  });
+  return pathsShapeUnion(subj_paths, shape2);
 }
 
 function drawUnified(w, h, data) {
   var d = data.map(function(contour) {
     var p = contour[0];
-    var initial = ['M',p.x,p.y].join(' ');
+    var initial = ['M',(p.X||p.x||0),(p.Y||p.y||0)].join(' ');
     section = contour.slice(1).map(function(p) {
-      return ['L',p.x,p.y].join(' ');
+      return ['L',(p.X||p.x||0),(p.Y||p.y||0)].join(' ');
     }).join(' ');
     var pathString = [initial, section, 'Z'].join(' ');
     console.log(pathString);

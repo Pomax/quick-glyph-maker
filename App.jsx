@@ -4,8 +4,19 @@ var App = React.createClass({
       mouseX: this.props.width/2,
       mouseY: this.props.height/2,
       divisions: 10,
-      contours: []
+      contours: [],
+      mode: false
     };
+  },
+  componentDidMount: function() {
+    var setMode = function(mode) {
+      this.setState({ mode: mode });
+    }.bind(this);
+    document.addEventListener("keydown", function(evt) {
+      if (evt.key.toLowerCase() === 'c') {
+        setMode("curve");
+      }
+    });
   },
   render: function() {
     var w = this.props.width;
@@ -26,12 +37,12 @@ var App = React.createClass({
              onMouseDown={this.end}
              style={{zIndex:1000}} />
         <svg width={w} height={h}>
-          <Grid ref="grid" width={w} height={h} divisions={this.state.divisions} mouseX={mx} mouseY={my} />
+          <Grid ref="grid" width={w} height={h} divisions={this.state.divisions} mouseX={mx} mouseY={my} curve={this.state.mode==='curve'}/>
           { contours }
           <Shapes ref="lines" width={w} height={h} temp={temp} />
         </svg>
         <svg width={w} height={h}>
-          <path fill="rgba(0,0,0,0.3)" stroke="none" d={this.state.dpreview}/>
+          <path fill="rgba(0,0,0,0.3)" stroke="black" d={this.state.dpreview}/>
         </svg>
         <div className="controls">
           <button onClick={this.clear}>CLEAR</button>
@@ -74,6 +85,10 @@ var App = React.createClass({
   placePoint: function(evt) {
     if (evt.button === 0) {
       this.mark = this.refs.grid.getPosition();
+      if(this.state.mode === 'curve') {
+        this.mark.curve = true;
+        this.setState({ mode: false });
+      }
       this.refs.lines.addPoint(this.mark);
       if (this.state.dpreview) {
         this.setState({ dpreview: false });
@@ -101,7 +116,3 @@ var App = React.createClass({
     this.setState({ mouseX: x, mouseY: y});
   }
 });
-
-React.render(<App width={600} height={600}/>, document.getElementById('app'));
-
-
