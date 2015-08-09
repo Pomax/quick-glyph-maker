@@ -1,15 +1,81 @@
-function getCurveFrom(p1, p2, p3) {
-  if(!!p3) {
-    var c = abstractor.getCCenter(p1,p2,p3);
-    var largeArcFlag = 0;
-    var SweepFlag = c.f ? 0 : 1;
-    var arcto = ['A', c.r, c.r, 0, largeArcFlag, SweepFlag, p3.x, p3.y].join(' ');
-    return arcto;
-  }
-  return ['L', p2.x, p2.y].join(' ');
-}
-
 var Shapes = React.createClass({
+  statics: {
+    cleanSVG: function(svg) {
+      // Clean up SVG code here, because the unification
+      // process will happily turn M 0 0 L 1 1 L 2 2 into
+      // M 0 0 C 0 0 1 1 1 1 C 1 1 2 2 2 2 for ... reasons?
+      var _svg;
+      var round = function(v) { return ((10000*svg)|0)/10000; };
+
+      // step 1: remove any meaningless segments
+      while (svg !== _svg) {
+        _svg = svg;
+        svg = _svg.replace(/((\d+(\.\d+)?,\d+(\.\d+)?)C(\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?))/g, function(a,b,c,d) {
+          c = c.split(",").map(round);
+          d = d.split(",").map(round);
+          if(c[0] === d[0] && c[1] === d[1]) {
+            if (d[0] === d[2] && d[1] === d[3]) {
+              if (d[2] === d[4] && d[3] === d[5]) {
+                return c.join(',');
+              }
+              return a;
+            }
+            return a;
+          }
+          return a;
+        });
+      }
+      console.log(svg);
+
+      // step 2: collapse [x x C x x y y y y] to [x x L y y]
+      while (svg !== _svg) {
+        console.log(svg);
+        _svg = svg;
+        svg = _svg.replace(/((\d+(\.\d+)?,\d+(\.\d+)?)C(\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?))/g, function(a,b,c,d) {
+          c = c.split(",").map(round);
+          d = d.split(",").map(round);
+          if(c[0] === d[0] && c[1] === d[1]) {
+            if (d[2] === d[4] && d[3] === d[5]) {
+              return c.join(',') + 'L' + d.slice(4).join(',');
+            }
+            return a;
+          }
+          return a;
+        });
+      }
+
+
+      console.log(svg);
+      return svg;
+    },
+    pointToSVGPath: function(points, p, idx) {
+      return function(p,idx) {
+        if (p.back) {
+          var b = p.back;
+          var p1 = points[idx-1];
+          if (p1) {
+            var kappa = 0.9;
+            var x1 = p1.x + (b.x-p1.x)*kappa;
+            var y1 = p1.y + (b.y-p1.y)*kappa;
+            var x2 = b.x + (p.x-b.x)*kappa;
+            var y2 = b.y + (p.y-b.y)*kappa;
+            return ['C',x1,y1,x2,y2,p.x,p.y].join(' ');
+          }
+          return ['C',b.x,b.y,b.x,b.y,p.x,p.y].join(' ');
+        }
+        return ['L',p.x,p.y].join(' ');
+      };
+    },
+    pointsToSVGPath: function(points, closed) {
+      var path = points.map(Shapes.pointToSVGPath(points));
+      if (points[0]) {
+        var p = points[0];
+        path = ['M',p.x,p.y].concat(path).join(' ');
+        if (closed) { path += ' Z'; }
+      }
+      return path;
+    }
+  },
   getInitialState: function() {
     return {
       points: this.props.points || [],
@@ -30,24 +96,8 @@ var Shapes = React.createClass({
     return false;
   },
   getPolyLine: function(points, props) {
-    var polyline = points.map(function(p,idx) {
-      if (!p.curve) {
-        return ['L',p.x,p.y].join(' ');
-      } else {
-        // construct an arc through this point
-        return getCurveFrom(points[idx-1], p, points[idx+1]);
-      }
-    });
-
-    if (points[0]) {
-      var p = points[0];
-      polyline = ['M',p.x,p.y].concat(polyline).join(' ');
-      if (this.state.closed) { polyline += ' Z'; }
-      props.d = polyline;
-      polyline = <path {...props}/>
-    }
-
-    return polyline;
+    props.d = Shapes.pointsToSVGPath(points, this.state.closed);
+    return <path {...props}/>;
   },
   render: function() {
     var points = this.state.points;
@@ -61,7 +111,23 @@ var Shapes = React.createClass({
   },
   addPoint: function(p) {
     var points = this.state.points;
+    var last = points.slice(-1)[0];
+    if (last && last.front) {
+      p.back = last.front;
+      last.front = false;
+    }
     points.push(p);
+    this.setState({points: points});
+  },
+  setControl: function(front) {
+    var points = this.state.points.reverse();
+    var p  = points[0];
+    p.front = front;
+    p.back = {
+      x: p.x - (front.x-p.x),
+      y: p.y - (front.y-p.y)
+    };
+    points = points.reverse();
     this.setState({points: points});
   },
   close: function() {
