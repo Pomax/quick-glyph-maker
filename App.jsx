@@ -1,13 +1,33 @@
 var App = React.createClass({
   statics: {
+    compound: function(w, h, contours) {
+      var canvas = document.createElement("myCanvas");
+      canvas.width = w;
+      canvas.height = h;
+      paper.setup(canvas);
+      var compound = new paper.CompoundPath();
+      contours.forEach(function(contour) {
+        compound.addChild(new paper.Path(Shapes.pointsToSVGPath(contour,true)));
+      });
+      var path = compound.exportSVG();
+      var d = path.getAttribute("d");
+      return d;
+    },
     unify: function(w, h, path1, path2) {
-      var paper = new Raphael(0,0,w,h), union;
-      paper.canvas.style.display = "none";
-      path1 = paper.path(path1);
-      path2 = paper.path(path2);
-      union = paper.union(path1, path2);
-      paper.remove();
-      return Shapes.cleanSVG(union);
+      var canvas = document.createElement("myCanvas");
+      canvas.width = w;
+      canvas.height = h;
+      paper.setup(canvas);
+      path1 = new paper.Path(path1);
+      path2 = new paper.Path(path2);
+      unified = path1.unite(path2);
+      var d, path = unified.exportSVG();
+      if (path.nodeName.toLowerCase() === "polygon") {
+        var points = path.getAttribute('points').split(/\s+|,/);
+        var x0=points.shift(), y0=points.shift();
+        var d = 'M'+x0+','+y0+'L'+points.join(' ')+"z";
+      } else { d = path.getAttribute("d"); }
+      return d;
     }
   },
   getInitialState: function() {
@@ -76,6 +96,7 @@ var App = React.createClass({
         unified = App.unify(w, h, unified, Shapes.pointsToSVGPath(contour, true));
       });
     }
+
     this.setState({ dpreview: unified }, function() { this.clear(); });
   },
   clear: function() {
