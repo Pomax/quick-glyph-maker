@@ -5,47 +5,40 @@ var Shapes = React.createClass({
       // process will happily turn M 0 0 L 1 1 L 2 2 into
       // M 0 0 C 0 0 1 1 1 1 C 1 1 2 2 2 2 for ... reasons?
       var _svg;
-      var round = function(v) { return ((10000*svg)|0)/10000; };
+      var round = function(v) { return ((10000*v)|0)/10000; };
 
       // step 1: remove any meaningless segments
       while (svg !== _svg) {
         _svg = svg;
-        svg = _svg.replace(/((\d+(\.\d+)?,\d+(\.\d+)?)C(\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?))/g, function(a,b,c,d) {
+        svg = _svg.replace(/((\d+(\.\d+)?,\d+(\.\d+)?)C(\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?))/g, function(a,b,c,_,__,d) {
           c = c.split(",").map(round);
           d = d.split(",").map(round);
           if(c[0] === d[0] && c[1] === d[1]) {
-            if (d[0] === d[2] && d[1] === d[3]) {
-              if (d[2] === d[4] && d[3] === d[5]) {
-                return c.join(',');
-              }
-              return a;
+            // meaningless segment?
+            if (d[0] === d[2] && d[2] === d[4] && d[1] === d[3] && d[3] === d[5]) {
+              return c.join(',');
             }
-            return a;
-          }
-          return a;
-        });
-      }
-      console.log(svg);
-
-      // step 2: collapse [x x C x x y y y y] to [x x L y y]
-      while (svg !== _svg) {
-        console.log(svg);
-        _svg = svg;
-        svg = _svg.replace(/((\d+(\.\d+)?,\d+(\.\d+)?)C(\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?,\d+(\.\d+)?))/g, function(a,b,c,d) {
-          c = c.split(",").map(round);
-          d = d.split(",").map(round);
-          if(c[0] === d[0] && c[1] === d[1]) {
+            // obvious line segment
             if (d[2] === d[4] && d[3] === d[5]) {
               return c.join(',') + 'L' + d.slice(4).join(',');
             }
-            return a;
           }
-          return a;
+          // non-obviouse line segment
+          var dx = d[4]-c[0], dy = d[5]-c[1];
+          if (dx && dy) {
+            // do d[0,1] and d[2,3] lie on the line pre--post?
+            var  r = round( dy/dx ),
+                r1 = round( (d[1] - c[1])/(d[0] - c[0]) || r ),
+                r2 = round( (d[3] - c[1])/(d[2] - c[0]) || r );
+            if (r===r1 && r1===r2) {
+              return c.join(',') + 'L' + d.slice(4).join(',');
+            }
+          }
+          return c.join(',')+'C'+d.join(',');
         });
       }
-
-
       console.log(svg);
+
       return svg;
     },
     pointToSVGPath: function(points, p, idx) {

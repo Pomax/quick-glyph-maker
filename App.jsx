@@ -46,7 +46,6 @@ var App = React.createClass({
              onMouseDown={this.mouseDown}
              onMouseMove={this.snap}
              onMouseUp={this.mouseUp}
-
              style={{zIndex:1000}} />
         <svg width={w} height={h}>
           <Grid ref="grid" width={w} height={h} divisions={this.state.divisions} mouseX={mx} mouseY={my} curve={this.state.mode==='curve'}/>
