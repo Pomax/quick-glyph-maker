@@ -88,15 +88,17 @@ var App = React.createClass({
   },
   unify: function() {
     var contours = this.state.contours;
-    var unified = Shapes.pointsToSVGPath(contours[0], true);
     var w = this.props.width;
     var h = this.props.height;
+    /*
+    var unified = Shapes.pointsToSVGPath(contours[0], true);
     if (contours.length > 1) {
       contours.slice(1).forEach(function(contour) {
         unified = App.unify(w, h, unified, Shapes.pointsToSVGPath(contour, true));
       });
     }
-
+    */
+    var unified = App.compound(w, h, contours);
     this.setState({ dpreview: unified }, function() { this.clear(); });
   },
   clear: function() {
