@@ -44,7 +44,7 @@ var App = React.createClass({
           onMouseUp: this.mouseUp
         }}/>
 
-        <svg width={w} height={h}>{ shapes }</svg>
+        <svg width={w} height={h} style={{zIndex: 5}}>{ shapes }</svg>
 
         <svg width={w} height={h}>
           {this.state.dpreview ? <path ref="prevpath" fill="rgba(0,0,0,0.3)" stroke="black" d={this.state.dpreview}/> : false }
