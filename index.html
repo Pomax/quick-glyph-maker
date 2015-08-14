@@ -4,18 +4,24 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <p>Left-click to place points, snapped to (half) grid, right-click to close a shape and move on to the next one. Once you're happy with the outlines, hit "finalize" to get the (possibly UNION clip-resolved) SVG path string for drawing your shape.</p>
+    <div id="app" oncontextmenu="return false"></div>
 
-    <div id="app"></div>
-
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react-with-addons.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react-with-addons.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
-    <script type="text/jsx" src="Grid.jsx"></script>
-    <script type="text/jsx" src="Shapes.jsx"></script>
-
     <script src="paper-full.min.js"></script>
+    <script src="utils.js"></script>
+
+    <script type="text/jsx" src="Grid.jsx"></script>
+    <script type="text/jsx" src="Contour.jsx"></script>
+    <script type="text/jsx" src="Shapes.jsx"></script>
     <script type="text/jsx" src="App.jsx"></script>
 
-    <script type="text/jsx">React.render(<App width={600} height={600}/>, document.getElementById('app'));</script>
+    <script type="text/jsx">
+      React.render(<App {...{
+        width: 600,
+        height: 600
+      }}/>, document.getElementById('app'));
+    </script>
+
   </body>
 </html>

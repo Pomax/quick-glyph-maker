@@ -1,12 +1,12 @@
 var Grid = React.createClass({
   statics: {
-    getSnapped: function(x,y,w,h,d) {
-      d = d*2;
-      w = w/d;
-      h = h/d;
+    getSnapped: function(options) {
+      var d = options.d*2,
+          w = options.w/d,
+          h = options.h/d;
       return {
-        x: w * Math.round(x/w),
-        y: h * Math.round(y/h)
+        x: w * Math.round(options.x/w),
+        y: h * Math.round(options.y/h)
       };
     }
   },
@@ -48,18 +48,26 @@ var Grid = React.createClass({
     return this.divisions;
   },
   getPosition: function() {
-    var snapped = Grid.getSnapped(this.props.mouseX,
-                                  this.props.mouseY,
-                                  this.props.width,
-                                  this.props.height,
-                                  this.state.divisions);
-    return snapped;
+    var p = this.props;
+    return Grid.getSnapped({
+      x: p.mouseX,
+      y: p.mouseY,
+      w: p.width,
+      h: p.height,
+      d: this.state.divisions
+    });
   },
   render: function() {
     var snapped = this.getPosition();
     return <g>
       { this.generateDivisions() }
-      <circle r={10} cx={snapped.x} cy={snapped.y} fill="none" stroke={this.props.curve ? "red" : "black"}/>
+      <circle {...{
+        r: 10,
+        cx: snapped.x,
+        cy: snapped.y,
+        fill: "none",
+        stroke: this.props.curve ? "red" : "black"
+      }}/>
     </g>;
   }
 });
