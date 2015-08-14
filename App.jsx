@@ -1,42 +1,9 @@
 var App = React.createClass({
-  statics: {
-    compound: function(w, h, contours) {
-      var canvas = document.createElement("myCanvas");
-      canvas.width = w;
-      canvas.height = h;
-      paper.setup(canvas);
-      var compound = new paper.CompoundPath();
-      contours.forEach(function(contour) {
-        compound.addChild(new paper.Path(Shapes.pointsToSVGPath(contour,true)));
-      });
-      var path = compound.exportSVG();
-      var d = path.getAttribute("d");
-      return d;
-    },
-    unify: function(w, h, path1, path2) {
-      var canvas = document.createElement("myCanvas");
-      canvas.width = w;
-      canvas.height = h;
-      paper.setup(canvas);
-      path1 = new paper.Path(path1);
-      path2 = new paper.Path(path2);
-      unified = path1.unite(path2);
-      var d, path = unified.exportSVG();
-      if (path.nodeName.toLowerCase() === "polygon") {
-        var points = path.getAttribute('points').split(/\s+|,/);
-        var x0=points.shift(), y0=points.shift();
-        var d = 'M'+x0+','+y0+'L'+points.join(' ')+"z";
-      } else { d = path.getAttribute("d"); }
-      return d;
-    }
-  },
   getInitialState: function() {
     return {
       mouseX: this.props.width/2,
       mouseY: this.props.height/2,
-      divisions: 10,
-      contours: [],
-      mode: false
+      divisions: 10
     };
   },
   componentDidMount: function() {
@@ -44,110 +11,105 @@ var App = React.createClass({
       this.setState({ mode: mode });
     }.bind(this);
     document.addEventListener("keydown", function(evt) {
-      if (evt.key.toLowerCase() === 'c') {
+      if (evt.key && evt.key.toLowerCase() === 'c') {
         setMode("curve");
       }
     });
   },
+  componentDidUpdate: function() {
+    if (this.refs.prevpath) {
+      var node = React.findDOMNode(this.refs.prevpath);
+      node.setAttribute("fill-rule", "evenodd");
+    }
+  },
   render: function() {
     var w = this.props.width;
     var h = this.props.height;
-    var mx = this.state.mouseX;
-    var my = this.state.mouseY;
     var temp = !this.mark ? false : this.temp;
-
-    var contours = this.state.contours.map(function(points) {
-      return <Shapes width={w} height={h} points={points} closed={true} />
-    });
+    var shapes = <Shapes ref="shapes" {...{
+      mouseX: this.state.mouseX,
+      mouseY: this.state.mouseY,
+      gridX: this.state.gridX,
+      gridY: this.state.gridY
+    }}/>;
 
     return (
       <div>
-        <svg width={w} height={h}
-             onMouseDown={this.mouseDown}
-             onMouseMove={this.snap}
-             onMouseUp={this.mouseUp}
+        <svg ref="handler" {...{
+          width: w,
+          height: h,
+          style: { zIndex: 10 },
+          onMouseDown: this.mouseDown,
+          onMouseMove: this.mouseMove,
+          onMouseUp: this.mouseUp
+        }}/>
 
-             style={{zIndex:1000}} />
+        <svg width={w} height={h}>{ shapes }</svg>
+
         <svg width={w} height={h}>
-          <Grid ref="grid" width={w} height={h} divisions={this.state.divisions} mouseX={mx} mouseY={my} curve={this.state.mode==='curve'}/>
-          { contours }
-          <Shapes ref="lines" width={w} height={h} temp={temp} control={this._mousedown} />
+          {this.state.dpreview ? <path ref="prevpath" fill="rgba(0,0,0,0.3)" stroke="black" d={this.state.dpreview}/> : false }
+          <Grid ref="grid" {...{
+            width: w,
+            height: h,
+            divisions: this.state.divisions,
+            mouseX: this.state.mouseX,
+            mouseY: this.state.mouseY
+          }}/>
         </svg>
-        <svg width={w} height={h}>
-          <path fill="rgba(0,0,0,0.3)" stroke="black" d={this.state.dpreview}/>
-        </svg>
+
         <div className="controls">
           <button onClick={this.clear}>CLEAR</button>
           <button onClick={this.decRes}>decrease resolution</button>
           <button onClick={this.incRes}>increase resolution</button>
-          <button onClick={this.unify}>FINALISE</button>
+          <button onClick={this.collapse}>FINALISE</button>
         </div>
+
         {this.state.dpreview ? <div className="dpreview">{this.state.dpreview}</div> : false }
       </div>
     );
   },
-  unify: function() {
-    var contours = this.state.contours;
+
+  clear: function() {
+    this.refs.shapes.clear();
+    this.setState({ dpreview: false });
+  },
+
+  decRes: function() {
+    this.setState({ divisions: this.state.divisions >>> 1 || 0});
+  },
+
+  incRes: function() {
+    this.setState({ divisions: this.state.divisions << 1 });
+  },
+
+  collapse: function() {
     var w = this.props.width;
     var h = this.props.height;
-    /*
-    var unified = Shapes.pointsToSVGPath(contours[0], true);
-    if (contours.length > 1) {
-      contours.slice(1).forEach(function(contour) {
-        unified = App.unify(w, h, unified, Shapes.pointsToSVGPath(contour, true));
-      });
-    }
-    */
-    var unified = App.compound(w, h, contours);
-    this.setState({ dpreview: unified }, function() { this.clear(); });
+    var d = unify(w, h, this.refs.shapes.contours);
+    this.setState({ dpreview: d });
   },
-  clear: function() {
-    this.refs.lines.clear();
-    this.setState({ contours: [] });
+
+  mouseDown: function(evt) {
+    this.refs.shapes.mouseDown(evt);
   },
-  decRes: function() {
-    this.setState({
-      divisions: this.state.divisions >> 1
-    });
-  },
-  incRes: function() {
-    this.setState({
-      divisions: this.state.divisions << 1
-    });
-  },
+
   mouseUp: function(evt) {
-    if (evt.button === 0) {
-      if (this.state.dpreview) {
-        this.setState({ dpreview: false });
-      }
-      var mark = this.mark;
-      var ref = this.temp;
-      if (ref && (ref.x !== mark.x || ref.y !== mark.y)) {
-        this.refs.lines.setControl(ref);
-      }
-      this.mark = false;
-      this.temp = false;
-    }
-    this._mousedown = false;
+    this.refs.shapes.mouseUp(evt);
   },
-  snap: function(evt) {
+
+  mouseMove: function(evt) {
+    if(evt.currentTarget !== evt.nativeEvent.target) return;
     evt = evt.nativeEvent;
     x = evt.offsetX;
     y = evt.offsetY;
-    if (this.mark) { this.temp = this.refs.grid.getPosition(); }
-    this.setState({ mouseX: x, mouseY: y});
-  },
-  mouseDown: function(evt) {
-    if (evt.button == 0) {
-      this.mark = this.refs.grid.getPosition();
-      this.refs.lines.addPoint(this.mark);
-    } else {
-      var contour = this.refs.lines.close();
-      var contours = this.state.contours;
-      contours.push(contour);
-      this.refs.lines.clear();
-      this.setState({ contours: contours });
-    }
-    this._mousedown = true;
+    var snapped = this.refs.grid.getPosition();
+    this.setState({
+      mouseX: x,
+      mouseY: y,
+      gridX: snapped.x,
+      gridY: snapped.y
+    }, function() {
+      this.refs.shapes.mouseMove(evt);
+    });
   }
 });
