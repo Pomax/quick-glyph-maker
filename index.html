@@ -4,23 +4,36 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div id="app" oncontextmenu="return false"></div>
+    <div id="app"></div>
+
+    <script src="bezier.js"></script>
+    <script src="utils.js"></script>
+    <script src="paper-full.min.js"></script>
+
+    <script src="svgconverter/PointCurveShape.js"></script>
+    <script src="svgconverter/TTXPointCurveShape.js"></script>
+    <script src="svgconverter/Receiver.js"></script>
+    <script src="svgconverter/TTXReceiver.js"></script>
+    <script src="svgconverter/SVGParser.js"></script>
+    <script src="svgconverter/toTTX.js"></script>
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/react-with-addons.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.13.3/JSXTransformer.js"></script>
-    <script src="paper-full.min.js"></script>
-    <script src="utils.js"></script>
 
-    <script type="text/jsx" src="Grid.jsx"></script>
-    <script type="text/jsx" src="Contour.jsx"></script>
-    <script type="text/jsx" src="Shapes.jsx"></script>
-    <script type="text/jsx" src="App.jsx"></script>
+    <script type="text/jsx" src="app/Shapes.jsx"></script>
+    <script type="text/jsx" src="app/Grid.jsx"></script>
+    <script type="text/jsx" src="app/Contour.jsx"></script>
+    <script type="text/jsx" src="app/App.jsx"></script>
 
     <script type="text/jsx">
-      React.render(<App {...{
-        width: 600,
-        height: 600
-      }}/>, document.getElementById('app'));
+      (function loadApp() {
+        if(window.Shapes && window.Grid && window.Contour && window.App) {
+          React.render(<App {...{
+            width: 600,
+            height: 600
+          }}/>, document.getElementById('app'));
+        } else { setTimeout(loadApp, 100); }
+      }());
     </script>
 
   </body>

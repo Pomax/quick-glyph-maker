@@ -33,7 +33,10 @@ p {
   top: calc(100% + 1em);
 }
 
-#app div.dpreview {
+#app .previews {
   position: absolute;
   top: calc(100% + 4em);
 }
+
+#app .previews .SVG { font-family: monospace; padding: 1em; }
+#app .previews .TTX { white-space: pre; font-family: monospace; padding: 1em; }

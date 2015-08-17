@@ -1,0 +1,42 @@
+<!doctype html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Font test</title>
+
+    <script type="text/css">
+      @font-face {
+        font-family: test;
+        src: url('ourfont - just the A.ttf?cb=TIMESTAMP') format('truetype');
+        font-weight: normal;
+      }
+      * {
+        font-family: monospace;
+      }
+      p.test {
+        font-family: test, monospace;
+      }
+    </script>
+
+    <script>
+      var e = document.querySelector("[type='text/css']");
+      var text = e.textContent.replace('TIMESTAMP', Date.now());
+      var style = document.createElement("style");
+      style.textContent = text;
+      document.head.appendChild(style);
+    </script>
+  </head>
+
+  <body>
+    <h1>Font test</h1>
+    <p>The following two paragraphs are typeset using whatever is the default monospace font.
+       However, the second paragraph has the capital A styled using our custom font, so that
+       if the font generation worked, we'll see a different sequence of A's at the end.</p>
+    <hr>
+    <p>Plain paragraph: AAAA</p>
+    <hr>
+    <p class="test">Test paragraph : AAAA</p>
+    <hr>
+  </body>
+
+</html>

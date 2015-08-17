@@ -37,14 +37,14 @@ function union(w, h, path1, path2) {
   var unified = p1.unite(p2);
   var intersection = p1.intersect(p2);
 
-  if(!intersection) { return -3; }
+  if(!intersection.children) { return -3; }
 
   var reversed = p1.unite(p2);
   reversed.reverse();
 
   var ds = [p1, p2, unified, reversed].map(function(p) { return p.exportSVG(); }).map(forcePath);
 
-  // TODO: track non-overlapping elements separately, based on empty intersections
+  // TODO: track non-overlapping elements separately, based on empty intersections?
   if (ds[0] === ds[2] || ds[0] === ds[3]) { return -1; }
   if (ds[1] === ds[2] || ds[1] === ds[3]) { return -2; }
   return ds[2];
@@ -76,7 +76,7 @@ function unify(w, h, contours) {
     if (!processed) { paths.push(path); }
   }
 
-  // FIXME: TODO: Odd things happen with two separate donuts
+  // FIXME: TODO: Odd things can happen with certain shapes
   console.log(paths.length + " compounds");
 
   return paths.join(' ');
@@ -165,3 +165,73 @@ function dist(p1, p2) {
       distanceSquared = x2 + y2;
   return Math.sqrt(distanceSquared);
 }
+
+var formQuadratic = (function() {
+  function lli8(x1,y1,x2,y2,x3,y3,x4,y4) {
+    var nx=(x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4),
+        ny=(x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4),
+        d=(x1-x2)*(y3-y4)-(y1-y2)*(x3-x4);
+    if(d==0) { return false; }
+    return { x: nx/d, y: ny/d };
+  }
+
+  function naiveQuad(x1,y1,x2,y2,x3,y3,x4,y4) {
+    if(typeof y1 === "undefined") {
+      var p = x1.points;
+      x1 = p[0].x; y1 = p[0].y;
+      x2 = p[1].x; y2 = p[1].y;
+      x3 = p[2].x; y3 = p[2].y;
+      x4 = p[3].x; y4 = p[3].y;
+    }
+    var qc = lli8(x1,y1,x2,y2,x3,y3,x4,y4);
+    return new Bezier(x1,y1,qc.x,qc.y,x4,y4);
+  }
+
+  function cqError(ccurve, qcurve) {
+    var cm = ccurve.get(0.5),
+        qm = qcurve.get(0.5),
+        e = dist(cm,qm);
+    return e<0? -e : e;
+  }
+
+  function formQuadratic(x1,y1,x2,y2,x3,y3,x4,y4) {
+    var ccurve = new Bezier(x1,y1,x2,y2,x3,y3,x4,y4);
+    var qcurve = naiveQuad(x1,y1,x2,y2,x3,y3,x4,y4);
+
+    // already quadratic enough?
+    if(cqError(ccurve, qcurve) < 2) {
+      return [x1,y1,qc.x,qc.y,x4,y4];
+    }
+
+    // no: start splitting
+    var i = 2,
+        error = 999,
+        maxError = 5,
+        segments,
+        curves,
+        s,
+        step=1/i;
+    while (error > maxError) {
+      segments = [];
+      curves = [];
+      error = 0;
+      for(s=0; s<i; s++) { segments.push(ccurve.split(s*step, (s+1)*step)); }
+      segments.forEach(function(ccurve) {
+        var qcurve = naiveQuad(ccurve);
+        curves.push(qcurve);
+        error += cqError(ccurve, qcurve);
+      });
+      i++;
+      step = 1/i;
+    }
+    // can we filter out "implied" on-curve points?
+
+    // ...
+
+    // done.
+    return curves;
+  };
+
+  return formQuadratic;
+}());
+

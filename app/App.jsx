@@ -7,13 +7,10 @@ var App = React.createClass({
     };
   },
   componentDidMount: function() {
-    var setMode = function(mode) {
-      this.setState({ mode: mode });
-    }.bind(this);
-    document.addEventListener("keydown", function(evt) {
-      if (evt.key && evt.key.toLowerCase() === 'c') {
-        setMode("curve");
-      }
+    // we don't want context menus to pop up while drawing
+    var list = document.querySelectorAll("svg");
+    Array.prototype.forEach.call(list, function(svg) {
+      svg.oncontextmenu = function(){ return false; };
     });
   },
   componentDidUpdate: function() {
@@ -32,6 +29,17 @@ var App = React.createClass({
       gridX: this.state.gridX,
       gridY: this.state.gridY
     }}/>;
+
+    var xmlForm = false;
+    var d = this.state.dpreview;
+    if (d) {
+      xmlForm = <div className="previews">
+        <h2>SVG path</h2>
+        <div className="SVG">{ d }</div>
+        <h2>TTX glyph definition</h2>
+        <div className="TTX">{ toTTX("test", d, w, h) }</div>
+      </div>
+    }
 
     return (
       <div>
@@ -64,7 +72,7 @@ var App = React.createClass({
           <button onClick={this.collapse}>FINALISE</button>
         </div>
 
-        {this.state.dpreview ? <div className="dpreview">{this.state.dpreview}</div> : false }
+        { xmlForm }
       </div>
     );
   },
