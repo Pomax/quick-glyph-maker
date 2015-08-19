@@ -6,6 +6,7 @@ body {
   justify-content: center;
 }
 
+
 p {
   flex: 1;
   left: 0;
@@ -40,3 +41,15 @@ p {
 
 #app .previews .SVG { font-family: monospace; padding: 1em; }
 #app .previews .TTX { white-space: pre; font-family: monospace; padding: 1em; }
+
+#app .coordinates {
+  margin-right: 1em;
+}
+
+#app .grab {
+  cursor:grab;
+}
+
+#app .grab.dragging {
+  cursor:grabbing;
+}

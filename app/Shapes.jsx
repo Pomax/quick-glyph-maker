@@ -8,7 +8,9 @@ var Shapes = React.createClass({
     var contours = this.state.contours.map(function(points, idx) {
       return <Contour points={points} cid={idx} ref={idx + '-' + points.length}/>;
     });
-    return <g>{contours}</g>;
+    var ox = this.props.offsetX;
+    var oy = this.props.offsetY;
+    return <g transform={"translate("+ox+","+oy+")"}>{contours}</g>;
   },
 
   clear: function(bypass) {

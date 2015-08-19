@@ -37,7 +37,13 @@ function union(w, h, path1, path2) {
   var unified = p1.unite(p2);
   var intersection = p1.intersect(p2);
 
-  if(!intersection.children) { return -3; }
+  console.log(intersection);
+
+  // polygonal? (until Paper.js _always_ generates paths)
+  if(!intersection._segments && !intersection.children) { return -3; }
+
+  // normal real path shape?
+  else if(intersection._segments && intersection._segments.length===0) { return -3; }
 
   var reversed = p1.unite(p2);
   reversed.reverse();
@@ -68,6 +74,7 @@ function unify(w, h, contours) {
     for (var p=0; p<paths.length; p++) {
       var refpath = paths[p];
       var tryUnion = union(w, h, refpath, path);
+      console.log(tryUnion);
       if (typeof tryUnion === "number") { continue; }
       paths[p] = tryUnion;
       processed = true;
@@ -147,7 +154,8 @@ function pointsToSVGPath(points, closed) {
           c2 = kappa(l.front, p, true);
         }
         path += [' C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].join(' ');
-      } else { path += ' Z'; }
+      }
+      path += ' Z';
     }
   }
   return path;
@@ -200,7 +208,7 @@ var formQuadratic = (function() {
 
     // already quadratic enough?
     if(cqError(ccurve, qcurve) < 2) {
-      return [x1,y1,qc.x,qc.y,x4,y4];
+      return [x1,y1,qcurve.points[0].x,qcurve.points[0].y,x4,y4];
     }
 
     // no: start splitting
@@ -234,4 +242,3 @@ var formQuadratic = (function() {
 
   return formQuadratic;
 }());
-
