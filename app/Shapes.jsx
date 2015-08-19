@@ -46,8 +46,8 @@ var Shapes = React.createClass({
     if (this.mousedown && dist(this.mousedown, this.getMouse())>10) {
       this.mousemoved = true;
       var p = this.point;
-      var x = this.props.mouseX;
-      var y = this.props.mouseY;
+      var x = this.props.mouseX - this.props.offsetX;
+      var y = this.props.mouseY - this.props.offsetY;
       var dx = x - p.x;
       var dy = y - p.y;
       p.front = { x:x, y:y };
