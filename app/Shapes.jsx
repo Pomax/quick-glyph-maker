@@ -8,11 +8,13 @@ var Shapes = React.createClass({
 
   render: function() {
     var contours = this.state.contours.map(function(points, idx) {
-      return <Contour points={points} cid={idx} ref={idx + '-' + points.length} />;
+      if(points.length === 0) return false;
+      return <Contour points={points} cid={idx} ref={idx + '-' + points.length} key={"c"+idx} />;
     });
     var ox = this.props.offsetX;
     var oy = this.props.offsetY;
-    return <g transform={"translate("+ox+","+oy+")"}>{contours}</g>;
+    var group = <g transform={"translate("+ox+","+oy+")"}>{contours}</g>;
+    return group;
   },
 
   load: function(d) {
@@ -59,9 +61,8 @@ var Shapes = React.createClass({
 
   close: function() {
     this.svgParsing = false;
-    var update = this.contours;
     this.setState({
-      contours: update
+      contours: this.contours
     });
   },
 
@@ -119,6 +120,20 @@ var Shapes = React.createClass({
       var x = this.props.gridX;
       var y = this.props.gridY;
       this.addPoint(x,y);
+
+      var prev = this.points.slice(-2)[0];
+      if(prev && prev.front) {
+        // curve-correct
+        var p = this.point;
+        var c1 = prev.front;
+        var ik = 1 / 0.55228;
+        var real = {
+          x: prev.x + (c1.x-prev.x)*ik,
+          y: prev.y + (c1.y-prev.y)*ik
+        };
+        this.point.back = kappa(this.point, real);
+      }
+
     }
   },
 
@@ -132,13 +147,44 @@ var Shapes = React.createClass({
       //        will be placed instead. This involves showing what's
       //        happening for the previous point, too...
 
-      var p = this.point;
+      var curr = this.point, prev=false, front, back, corrected;
+
       var x = this.props.mouseX - this.props.offsetX;
       var y = this.props.mouseY - this.props.offsetY;
-      var dx = x - p.x;
-      var dy = y - p.y;
-      this.setRightControl(x, y);
-      this.setLeftControl(p.x - dx, p.y - dy);
+
+      // construct outbound control point from current point, kappa corrected
+      front = { x: x, y: y };
+      corrected = kappa(curr, front);
+      this.setRightControl(corrected.x, corrected.y);
+
+      // construct inbound control point from current point, kappa corrected
+      back = {
+        x: curr.x - (x - curr.x),
+        y: curr.y - (y - curr.y)
+      };
+      corrected = kappa(curr, back);
+      this.setLeftControl(corrected.x, corrected.y);
+
+      // is there a previous point that we need to "massage"?
+      if (this.points.length > 1) {
+        prev = this.points.slice(-2)[0];
+        if (!prev.front) {
+          // plain point: invent an aesthetic control point for it
+          if(!prev.back) {
+            corrected = kappa(prev, back);
+            prev._front = corrected;
+          }
+          // not a plain point: we need to project [back] onto the
+          // control line for this point, to keep with aesthetics.
+          else {
+            var projected = project(back, prev, prev.back);
+            corrected = kappa(prev, projected);
+            prev._front = corrected;
+          }
+        }
+      }
+
+
       this.setState({ points: this.points });
     }
   },
@@ -150,10 +196,27 @@ var Shapes = React.createClass({
       //console.log("click");
     }
     if (evt.button !== 0) {
-      //console.log("not left click");
+      if (this.point.front && !this.points[0].back) {
+        // curve-correct the last point.
+        var p = this.point;
+        var c1 = p.front;
+        var ik = 1 / 0.55228;
+        var real = {
+          x: p.x + (c1.x-p.x)*ik,
+          y: p.y + (c1.y-p.y)*ik
+        };
+        var corrected = kappa(this.points[0], real);
+        this.points[0].back = corrected;
+      }
       this.closeShape();
       this.startShape();
     }
+    var cpt = this.points.slice(-2)[0];
+    if (cpt && cpt._front) {
+      cpt.front = cpt._front;
+      delete cpt._front;
+    }
     this.mousedown = false;
   }
+
 });

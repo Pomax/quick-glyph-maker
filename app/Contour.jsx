@@ -33,6 +33,7 @@ var Contour = React.createClass({
     var points = this.state.points;
     var markers = points.map(function(p, pid) {
       var marks = [this.formPoint(p.x, p.y, pid)];
+      if (p._front) p.front = p._front;
       if (p.front || p.back) {
         // lines
         if (p.front) marks.push(this.formLine(p, p.front));
@@ -41,9 +42,10 @@ var Contour = React.createClass({
         if (p.front) marks.push(this.formPoint(p.front), pid + 'p');
         if (p.back) marks.push(this.formPoint(p.back), pid + 'n');
       }
+      if (p._front) p.front = false;
       return marks;
     }.bind(this));
-    var path = pointsToSVGPath(points, points.closed, this.props.noKappa);
+    var path = pointsToSVGPath(points, points.closed);
     return <g>
       {markers}
       {path ? <path fill="none" stroke="blue" d={path}/> : false}

@@ -93,6 +93,14 @@ function unify(w, h, contours) {
 //               ...
 // =================================
 
+function project(p, l1, l2) {
+  var m = (l2.y - l1.y) / (l2.x - l1.x);
+      b = l1.y - (m * l1.x),
+      x = (m * p.y + p.x - m * b) / (m * m + 1);
+      y = (m * m * p.y + m * p.x + b) / (m * m + 1);
+  return {x:x, y:y};
+}
+
 function kappa(p, r, backward) {
   var kappa = 0.55228,
       k = backward? 1-kappa : kappa,
@@ -104,7 +112,7 @@ function kappa(p, r, backward) {
   };
 }
 
-function pointToSVGPath(points, noKappa) {
+function pointToSVGPath(points) {
   return function(p, idx) {
     var p1 = points[idx-1], c1, c2;
 
@@ -112,16 +120,16 @@ function pointToSVGPath(points, noKappa) {
 
     if (p1.front || p.back) {
       if (p1.front && p.back) {
-        c1 = noKappa ? p1.front : kappa(p1, p1.front);
-        c2 = noKappa ? p.back : kappa(p.back, p, true);
+        c1 = p1.front;
+        c2 = p.back;
       }
       else if (p.back) {
-        c1 = noKappa ? p.back : kappa(p1, p.back);
-        c2 = noKappa ? p.back : kappa(p.back, p, true);
+        c1 = p.back;
+        c2 = p.back;
       }
       else {
-        c1 = noKappa ? p1.front : kappa(p1, p1.front);
-        c2 = noKappa ? p1.front : kappa(p1.front, p, true);
+        c1 = p1.front;
+        c2 = p1.front;
       }
       return ['C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].join(' ');
     }
@@ -130,13 +138,13 @@ function pointToSVGPath(points, noKappa) {
   };
 }
 
-function pointsToSVGPath(points, closed, noKappa) {
+function pointsToSVGPath(points, closed) {
   if (!points || points.length === 0) return;
 
-  // HACK TO MAKE SAVE/LOAD IDEMPOTENT. NOT A FAN, THOUGH.
-  noKappa  = true;
+  // temporarily pretend _front controls are true controls
+  points.forEach(function(p) { if(p._front) p.front = p._front; });
 
-  var path = points.map(pointToSVGPath(points, noKappa));
+  var path = points.map(pointToSVGPath(points));
   if (points[0]) {
     var p = points[0];
     path = ['M',p.x,p.y].concat(path.slice(1)).join(' ');
@@ -145,22 +153,26 @@ function pointsToSVGPath(points, closed, noKappa) {
       if (p.back || l.front) {
         var c1, c2;
         if (p.back && l.front) {
-          c1 = noKappa ? l.front : kappa(l, l.front);
-          c2 = noKappa ? p.back : kappa(p.back, p, true);
+          c1 = l.front;
+          c2 = p.back;
         }
         else if (p.back) {
-          c1 = noKappa ? p.back : kappa(l, p.back);
-          c2 = noKappa ? p.back : kappa(p.back, p, true);
+          c1 = p.back;
+          c2 = p.back;
         }
         else {
-          c1 = noKappa ? l.front : kappa(l, l.front);
-          c2 = noKappa ? l.front : kappa(l.front, p, true);
+          c1 = l.front;
+          c2 = l.front;
         }
         path += [' C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].join(' ');
       }
       path += ' Z';
     }
   }
+
+  // undo the previous pretending
+  points.forEach(function(p) { if(p._front) p.front = false; });
+
   return path;
 }
 
