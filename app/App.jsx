@@ -24,6 +24,8 @@ var App = React.createClass({
     // this is simply necessary because React doesn't have it
     var svgnode = React.findDOMNode(this.refs.handler);
     svgnode.addEventListener("wheel", this.scroll);
+
+    this.project = new Project(this.props.width, this.props.height);
   },
   componentDidUpdate: function() {
     if (this.refs.prevpath) {
@@ -126,6 +128,7 @@ var App = React.createClass({
       glyphName: glyphName,
       dpreview: d
     });
+    this.project.save(glyphName, d);
   },
 
   scroll: function(evt) {

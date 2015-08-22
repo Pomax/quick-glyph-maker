@@ -28,7 +28,7 @@ Camera.prototype = {
    * @return {obj{x,y}} world (x,y) coordinate
    */
   screenToWorld: function(x,y) {
-
+    // ...
     return {
       x: x,
       y: y
@@ -42,6 +42,7 @@ Camera.prototype = {
    * @return {obj{x,y}} screen (x,y) coordinate
    */
   worldToScreen: function(x,y) {
+    // ...
     return {
       x: x,
       y: y
