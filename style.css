@@ -23,20 +23,21 @@ p {
   margin-top: 3em;
 }
 
-#app div svg {
+#app div.panels {
+  position: relative;
+  height: 600px;
+}
+
+#app div.panels svg {
   position:absolute;
   top: 0;
   left: 0;
 }
 
 #app div div.controls {
-  position: absolute;
-  top: calc(100% + 1em);
 }
 
 #app .previews {
-  position: absolute;
-  top: calc(100% + 4em);
 }
 
 #app .previews .SVG { font-family: monospace; padding: 1em; }

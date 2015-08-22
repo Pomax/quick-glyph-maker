@@ -37,7 +37,7 @@ function union(w, h, path1, path2) {
   var unified = p1.unite(p2);
   var intersection = p1.intersect(p2);
 
-  console.log(intersection);
+  //console.log(intersection);
 
   // polygonal? (until Paper.js _always_ generates paths)
   if(!intersection._segments && !intersection.children) { return -3; }
@@ -74,7 +74,7 @@ function unify(w, h, contours) {
     for (var p=0; p<paths.length; p++) {
       var refpath = paths[p];
       var tryUnion = union(w, h, refpath, path);
-      console.log(tryUnion);
+      //console.log(tryUnion);
       if (typeof tryUnion === "number") { continue; }
       paths[p] = tryUnion;
       processed = true;
@@ -104,7 +104,7 @@ function kappa(p, r, backward) {
   };
 }
 
-function pointToSVGPath(points, p, idx) {
+function pointToSVGPath(points, noKappa) {
   return function(p, idx) {
     var p1 = points[idx-1], c1, c2;
 
@@ -112,16 +112,16 @@ function pointToSVGPath(points, p, idx) {
 
     if (p1.front || p.back) {
       if (p1.front && p.back) {
-        c1 = kappa(p1, p1.front);
-        c2 = kappa(p.back, p, true);
+        c1 = noKappa ? p1.front : kappa(p1, p1.front);
+        c2 = noKappa ? p.back : kappa(p.back, p, true);
       }
       else if (p.back) {
-        c1 = kappa(p1, p.back);
-        c2 = kappa(p.back, p, true);
+        c1 = noKappa ? p.back : kappa(p1, p.back);
+        c2 = noKappa ? p.back : kappa(p.back, p, true);
       }
       else {
-        c1 = kappa(p1, p1.front);
-        c2 = kappa(p1.front, p, true);
+        c1 = noKappa ? p1.front : kappa(p1, p1.front);
+        c2 = noKappa ? p1.front : kappa(p1.front, p, true);
       }
       return ['C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].join(' ');
     }
@@ -130,10 +130,13 @@ function pointToSVGPath(points, p, idx) {
   };
 }
 
-function pointsToSVGPath(points, closed) {
+function pointsToSVGPath(points, closed, noKappa) {
   if (!points || points.length === 0) return;
 
-  var path = points.map(pointToSVGPath(points));
+  // HACK TO MAKE SAVE/LOAD IDEMPOTENT. NOT A FAN, THOUGH.
+  noKappa  = true;
+
+  var path = points.map(pointToSVGPath(points, noKappa));
   if (points[0]) {
     var p = points[0];
     path = ['M',p.x,p.y].concat(path.slice(1)).join(' ');
@@ -142,16 +145,16 @@ function pointsToSVGPath(points, closed) {
       if (p.back || l.front) {
         var c1, c2;
         if (p.back && l.front) {
-          c1 = kappa(l, l.front);
-          c2 = kappa(p.back, p, true);
+          c1 = noKappa ? l.front : kappa(l, l.front);
+          c2 = noKappa ? p.back : kappa(p.back, p, true);
         }
         else if (p.back) {
-          c1 = kappa(l, p.back);
-          c2 = kappa(p.back, p, true);
+          c1 = noKappa ? p.back : kappa(l, p.back);
+          c2 = noKappa ? p.back : kappa(p.back, p, true);
         }
         else {
-          c1 = kappa(l, l.front);
-          c2 = kappa(l.front, p, true);
+          c1 = noKappa ? l.front : kappa(l, l.front);
+          c2 = noKappa ? l.front : kappa(l.front, p, true);
         }
         path += [' C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].join(' ');
       }

@@ -84,7 +84,7 @@ SVGParser.prototype = {
           cy1 = (y + cy + cy)/3;
 
           // Make start point bezier if it differs from the control point
-          if(x !=cx1 || y !=cy1) { receiver.setRightControl(cx1, cy1); }
+          if(x != cx1 || y != cy1) { receiver.setRightControl(cx1, cy1); }
 
           // NOTE: the relative control instruction does not count as offset coordinate, so
           //       any on-curve coordinates are relative to the previous on-curve coordinate.
@@ -96,7 +96,7 @@ SVGParser.prototype = {
           cy2 = (y + cy + cy)/3;
 
           receiver.addPoint(x, y);
-          if(x!=cx2 || y !=cy2) { receiver.setLeftControl(cx2, cy2); }
+          if(x != cx2 || y != cy2) { receiver.setLeftControl(cx2, cy2); }
         }
       }
 
@@ -113,7 +113,7 @@ SVGParser.prototype = {
           else if(op === "C") { cx1 = terms[c] + xoffset; cy1 = terms[c+1] + yoffset; }
 
           // Make start point bezier if it differs from the control point
-          if(x!=cx1 || y !=cy1) { receiver.setRightControl(cx1, cy1); }
+          if(x != cx1 || y != cy1) { receiver.setRightControl(cx1, cy1); }
 
           // NOTE: control points don't count as "real points". Any control point is relative
           //       to the last previous on-curve coordinate, instead.
@@ -128,7 +128,7 @@ SVGParser.prototype = {
           else if(op === "C") { x = terms[c+4] + xoffset; y = terms[c+5] + yoffset; }
 
           receiver.addPoint(x, y);
-          if(x!=cx2 || y !=cy2) { receiver.setLeftControl(cx2,cy2); }
+          if(x != cx2 || y != cy2) { receiver.setLeftControl(cx2,cy2); }
         }
       }
 

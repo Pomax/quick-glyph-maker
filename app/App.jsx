@@ -7,7 +7,7 @@ var App = React.createClass({
       offsetY: 0,
       zoom: 0.85,
       divisions: 10,
-      glyphName: "A",
+      glyphName: false,
       glyphmap: new GlyphMap(this.props.width, this.props.height)
     };
   },
@@ -64,52 +64,67 @@ var App = React.createClass({
 
     return (
       <div className={className}>
-        <svg ref="handler" {...{
-          width: w,
-          height: h,
-          style: { zIndex: 10 },
-          onMouseDown: this.mouseDown,
-          onMouseMove: this.mouseMove,
-          onMouseUp: this.mouseUp
-        }}/>
-
-        <svg width={w} height={h} style={{zIndex: 5}}>
-          {this.state.dpreview ? (
-          <g transform={"translate("+this.state.offsetX+","+this.state.offsetY+")"}>
-            <path ref="prevpath" fill="rgba(0,0,0,0.3)" stroke="black" d={this.state.dpreview}/>
-          </g> ): false }
-          { shapes }
-        </svg>
-
-        <svg width={w} height={h}>
-          <Grid ref="grid" {...{
+        <div className="panels">
+          <svg ref="handler" {...{
             width: w,
             height: h,
-            divisions: this.state.divisions,
-            mouseX: this.state.mouseX,
-            mouseY: this.state.mouseY,
-            drag: this.state.gridDrag
+            style: { zIndex: 10 },
+            onMouseDown: this.mouseDown,
+            onMouseMove: this.mouseMove,
+            onMouseUp: this.mouseUp
           }}/>
-        </svg>
+
+          <svg width={w} height={h} style={{zIndex: 5}}>
+            {this.state.dpreview ? (
+            <g transform={"translate("+this.state.offsetX+","+this.state.offsetY+")"}>
+              <path ref="prevpath" fill="rgba(0,0,0,0.3)" stroke="black" d={this.state.dpreview}/>
+            </g> ): false }
+            { shapes }
+          </svg>
+
+          <svg width={w} height={h}>
+            <Grid ref="grid" {...{
+              width: w,
+              height: h,
+              divisions: this.state.divisions,
+              mouseX: this.state.mouseX,
+              mouseY: this.state.mouseY,
+              drag: this.state.gridDrag
+            }}/>
+          </svg>
+        </div>
 
         <div className="controls">
           <span className="coordinates">{this.state.gridX||0}/{this.state.gridY||0}</span>
-          <button onClick={this.clear}>CLEAR</button>
-          <button onClick={this.decRes}>decrease resolution</button>
-          <button onClick={this.incRes}>increase resolution</button>
-          <button onClick={this.collapse}>FINALISE</button>
+          <button onClick={this.clear}>NEW</button>
+          <button onClick={this.decRes}>Decrease resolution</button>
+          <button onClick={this.incResaves}>Increase resolution</button>
+          <button onClick={this.save}>Save</button>
         </div>
 
-        <Project ref="project" glyphmap={this.state.glyphmap} />
+        <Project ref="project" glyphmap={this.state.glyphmap} loadGlyph={this.load} />
 
         { xmlForm }
       </div>
     );
   },
 
+  load: function(name, d) {
+    console.log("loading",name,":",d);
+    this.setState({
+      glyphName: name,
+      dpreview: false
+    }, function() {
+      this.refs.shapes.load(d);
+    });
+  },
+
   clear: function() {
     this.refs.shapes.clear();
-    this.setState({ dpreview: false });
+    this.setState({
+      dpreview: false,
+      glyphName: false
+    });
   },
 
   decRes: function() {
@@ -120,8 +135,10 @@ var App = React.createClass({
     this.setState({ divisions: this.state.divisions << 1 });
   },
 
-  collapse: function() {
-    var glyphName = prompt("Please specify a glyph name") || "test";
+  save: function() {
+    var glyphName = this.state.glyphName || prompt("Please specify a glyph name");
+    if (!glyphName) return;
+
     var w = this.props.width;
     var h = this.props.height;
     var d = unify(w, h, this.refs.shapes.contours);

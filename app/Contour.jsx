@@ -7,7 +7,7 @@ var Contour = React.createClass({
     };
   },
 
-  formPoint: function(x,y, pid) {
+  formPoint: function(x, y, pid) {
     if (pid === undefined) { pid = y; y = x.y; x = x.x; }
     var cid = this.state.cid;
     return <circle {...{
@@ -34,13 +34,16 @@ var Contour = React.createClass({
     var markers = points.map(function(p, pid) {
       var marks = [this.formPoint(p.x, p.y, pid)];
       if (p.front || p.back) {
-        marks.push(this.formPoint(p.front), pid + 'p');
-        marks.push(this.formPoint(p.back), pid + 'n');
-        marks.push(this.formLine(p.back, p.front));
+        // lines
+        if (p.front) marks.push(this.formLine(p, p.front));
+        if (p.back) marks.push(this.formLine(p.back, p));
+        // points
+        if (p.front) marks.push(this.formPoint(p.front), pid + 'p');
+        if (p.back) marks.push(this.formPoint(p.back), pid + 'n');
       }
       return marks;
     }.bind(this));
-    var path = pointsToSVGPath(points, points.closed);
+    var path = pointsToSVGPath(points, points.closed, this.props.noKappa);
     return <g>
       {markers}
       {path ? <path fill="none" stroke="blue" d={path}/> : false}

@@ -14,13 +14,15 @@ GlyphMap.prototype = {
     var h = this.height;
     var glyphTTX = Object.keys(glyphs).map(function(name) {
       var d = glyphs[name];
-      console.log(name, d, w, h);
       return toTTX(name, d, w, h);
     });
     return glyphTTX.join("\n\n");
   },
   getNames: function() {
     return Object.keys(this.glyphs);
+  },
+  get: function(name) {
+    return this.glyphs[name] || false;
   }
 };
 

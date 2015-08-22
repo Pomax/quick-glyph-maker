@@ -6,10 +6,17 @@ var Project = React.createClass({
   },
 
   render: function() {
+    var load = this.props.loadGlyph;
+    var gm = this.state.glyphmap;
+    var loadGlyph = function(n) {
+      load(n, gm.get(n));
+    };
+
     var buttons = this.state.glyphmap.getNames().map(function(n) {
-      return <button>{n}</button>
+      return <button onClick={function() { loadGlyph(n) }}>{n}</button>
     });
-    return <div>
+
+    return <div className="project">
       <h2>Saved glyph outlines</h2>
       { buttons }
     </div>;
