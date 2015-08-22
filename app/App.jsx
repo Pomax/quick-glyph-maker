@@ -7,7 +7,8 @@ var App = React.createClass({
       offsetY: 0,
       zoom: 0.85,
       divisions: 10,
-      glyphName: "A"
+      glyphName: "A",
+      glyphmap: new GlyphMap(this.props.width, this.props.height)
     };
   },
   componentDidMount: function() {
@@ -24,8 +25,6 @@ var App = React.createClass({
     // this is simply necessary because React doesn't have it
     var svgnode = React.findDOMNode(this.refs.handler);
     svgnode.addEventListener("wheel", this.scroll);
-
-    this.project = new Project(this.props.width, this.props.height);
   },
   componentDidUpdate: function() {
     if (this.refs.prevpath) {
@@ -101,6 +100,8 @@ var App = React.createClass({
           <button onClick={this.collapse}>FINALISE</button>
         </div>
 
+        <Project ref="project" glyphmap={this.state.glyphmap} />
+
         { xmlForm }
       </div>
     );
@@ -128,7 +129,7 @@ var App = React.createClass({
       glyphName: glyphName,
       dpreview: d
     });
-    this.project.save(glyphName, d);
+    this.refs.project.save(glyphName, d);
   },
 
   scroll: function(evt) {

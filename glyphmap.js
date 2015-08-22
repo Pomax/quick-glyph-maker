@@ -1,10 +1,10 @@
-var Project = function(w, h) {
+var GlyphMap = function(w, h) {
   this.width = w;
   this.height = h;
   this.glyphs = {};
 };
 
-Project.prototype = {
+GlyphMap.prototype = {
   save: function(name, outline) {
     this.glyphs[name] = outline;
   },
@@ -18,6 +18,9 @@ Project.prototype = {
       return toTTX(name, d, w, h);
     });
     return glyphTTX.join("\n\n");
+  },
+  getNames: function() {
+    return Object.keys(this.glyphs);
   }
 };
 
