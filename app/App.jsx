@@ -53,7 +53,7 @@ var App = React.createClass({
         <h2>SVG path</h2>
         <div className="SVG">{ d }</div>
         <h2>TTX glyph definition</h2>
-        <div className="TTX">{ toTTX(this.state.glyphName, d, w, h) }</div>
+        <div className="TTX">{ this.state.TTX }</div>
       </div>
     }
 
@@ -142,10 +142,15 @@ var App = React.createClass({
     var w = this.props.width;
     var h = this.props.height;
     var d = unify(w, h, this.refs.shapes.contours);
+
+    var TTX = toTTX(this.state.glyphName, d, w, h);
+
     this.setState({
       glyphName: glyphName,
-      dpreview: d
+      dpreview: d,
+      TTX: TTX
     });
+
     this.refs.project.save(glyphName, d);
   },
 
