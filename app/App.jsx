@@ -140,6 +140,12 @@ var App = React.createClass({
       evt.preventDefault();
       this.setState({ gridDrag: true });
     }
+    // undo last point placement
+    if (evt.key==="z" || evt.key==="Z") {
+      if (evt.ctrlKey || evt.metaKey) {
+        this.refs.shapes.undo();
+      }
+    }
   },
 
   keyUp: function(evt) {

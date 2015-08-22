@@ -13,6 +13,27 @@ var Shapes = React.createClass({
     return <g transform={"translate("+ox+","+oy+")"}>{contours}</g>;
   },
 
+  undo: function() {
+    var last;
+
+    // open the shape back up?
+    if (this.points.length === 0) {
+      var contours = this.contours;
+      last = contours.length - 1;
+      contours.splice(last,1);
+      this.points = contours.slice(-1)[0];
+      this.points.closed = false;
+      this.setState({ contours: this.contours });
+      return;
+    }
+
+    // remove last added point
+    var points = this.points;
+    last = points.length -1;
+    points.splice(last,1);
+    this.setState({ contours: this.contours });
+  },
+
   clear: function(bypass) {
     this.point = false;
     this.points = [];

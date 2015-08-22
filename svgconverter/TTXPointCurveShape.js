@@ -51,6 +51,11 @@ TTXPointCurveShape.prototype.toTTX = function(bounds) {
           y2 = curr.main.y,
           qcurves = formQuadratic(x1,y1,cx1,cy1,cx2,cy2,x2,y2);
       qcurves.forEach(function(q) {
+        console.log(q.points);
+        if (!q.points) {
+          console.log("what", {q:q});
+          return;
+        }
         var cp = q.points[1],
             ep = q.points[2];
         ttx.push({ x: cp.x, y: cp.y, oncurve: 0});

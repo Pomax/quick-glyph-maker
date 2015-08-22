@@ -208,7 +208,7 @@ var formQuadratic = (function() {
 
     // already quadratic enough?
     if(cqError(ccurve, qcurve) < 2) {
-      return [x1,y1,qcurve.points[0].x,qcurve.points[0].y,x4,y4];
+      return [qcurve];
     }
 
     // no: start splitting
@@ -219,6 +219,7 @@ var formQuadratic = (function() {
         curves,
         s,
         step=1/i;
+
     while (error > maxError) {
       segments = [];
       curves = [];
