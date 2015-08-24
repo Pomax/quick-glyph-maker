@@ -211,8 +211,7 @@ var Shapes = React.createClass({
   },
 
   mouseMove: function(evt) {
-    if (this.mousedown && dist(this.mousedown, this.getMouse())>10) {
-      this.mousemoved = true;
+    if (this.mousedown) {
 
       // 1) moving existing point ?
       if (this.activePoint) {
@@ -228,7 +227,9 @@ var Shapes = React.createClass({
       }
 
       // 2) determine curvature control point
-      else {
+      else if(dist(this.mousedown, this.getMouse())>10) {
+        this.mousemoved = true;
+
         var curr = this.point,
             prev = false,
             front,
