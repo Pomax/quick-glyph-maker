@@ -1,13 +1,23 @@
 body {
-  height: 100%;
   padding: 0;
   margin: 0;
-  display: flex;
-  justify-content: center;
 }
 
+#help {
+  width: 600px;
+  margin: auto;
+  background: rgb(250,250,255);
+  padding: 1em 2em;
+  border: 1px solid grey;
+}
 
-p {
+#help p.note {
+  display: block;
+  background: rgb(240,200,200);
+  padding: 0.2em 1em;
+}
+
+#app p {
   flex: 1;
   left: 0;
   right: 0;
@@ -20,6 +30,7 @@ p {
   width: 600px;
   height: 600px;
   border: 1px solid black;
+  margin: auto;
   margin-top: 3em;
 }
 
