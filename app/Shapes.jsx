@@ -302,6 +302,7 @@ var Shapes = React.createClass({
           p.back  = {x: p.x - dx, y: p.y - dy };
         }
 
+        this.props.invalidate();
         this.setState({ contours: this.contours });
       }
     }
