@@ -48,9 +48,17 @@ p {
 }
 
 #app .grab {
-  cursor:grab;
+  cursor:move;
 }
 
 #app .grab.dragging {
-  cursor:grabbing;
+  cursor:all-scroll;
+}
+
+#app div.controls div {
+  display: inline-block;
+}
+
+#app div.glyph.properties {
+  margin-left: 1em;
 }

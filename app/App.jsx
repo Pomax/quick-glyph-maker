@@ -8,11 +8,11 @@ var App = React.createClass({
   },
   render: function() {
     var xmlForm = false;
-    var d = this.state.dpreview;
-    if (d) {
+
+    if (this.state.TTX) {
       xmlForm = <div className="previews">
         <h2>SVG path</h2>
-        <div className="SVG">{ d }</div>
+        <div className="SVG">{ this.state.dpreview }</div>
         <h2>TTX glyph definition</h2>
         <div className="TTX">{ this.state.TTX }</div>
       </div>
@@ -21,17 +21,8 @@ var App = React.createClass({
     return (
       <div>
         <Panels ref="panels" width={this.props.width} height={this.props.height} divisions={this.state.divisions}/>
-
-        <div className="controls">
-          {this.state.glyphName ? <span className="coordinates">glyph: {this.state.glyphName}</span> : false}
-          <button onClick={this.newGlyph}>NEW</button>
-          <button onClick={this.decRes}>Decrease resolution</button>
-          <button onClick={this.incResaves}>Increase resolution</button>
-          <button onClick={this.save}>Save</button>
-        </div>
-
+        <Controls glyphName={this.state.glyphName} newGlyph={this.newGlyph} decRes={this.decRes} incRes={this.incRes} load={this.load} save={this.save}/>
         <Project ref="project" glyphmap={this.state.glyphmap} loadGlyph={this.load} />
-
         {xmlForm}
       </div>
     );
@@ -72,8 +63,10 @@ var App = React.createClass({
     var TTX = toTTX(this.state.glyphName, path, w, h);
     this.setState({
       glyphName: glyphName,
+      dpreview: path,
       TTX: TTX
     });
     this.refs.project.save(glyphName, path);
   }
 });
+

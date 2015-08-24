@@ -8,14 +8,20 @@ var Contour = React.createClass({
   },
 
   formPoint: function(x, y, pid) {
-    if (pid === undefined) { pid = y; y = x.y; x = x.x; }
-    var cid = this.state.cid;
+    if (pid === undefined) {
+      pid = y;
+      y = x.y;
+      x = x.x;
+    }
+
+    var over = overPoint({x:this.props.mx, y:this.props.my}, this.props.cid, pid, x, y);
+
     return <circle {...{
       cx: x || 0,
       cy: y || 0,
       r: 5,
-      fill: "red",
-      stroke: "red",
+      fill: !!over ? "blue" : "red",
+      stroke: !!over ? "blue" : "red",
       strokeWidth: 2,
       style: { zIndex: 2 }
     }}/>;
@@ -39,8 +45,8 @@ var Contour = React.createClass({
         if (p.front) marks.push(this.formLine(p, p.front));
         if (p.back) marks.push(this.formLine(p.back, p));
         // points
-        if (p.front) marks.push(this.formPoint(p.front), pid + 'p');
-        if (p.back) marks.push(this.formPoint(p.back), pid + 'n');
+        if (p.front) marks.push(this.formPoint(p.front.x, p.front.y, pid + '.front'));
+        if (p.back) marks.push(this.formPoint(p.back.x, p.back.y, pid + '.back'));
       }
       if (p._front) p.front = false;
       return marks;

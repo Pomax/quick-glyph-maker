@@ -162,20 +162,18 @@ var Panels = React.createClass({
   },
 
   keyDown: function(evt) {
-    if (evt.key===" ") {
+    if (evt.keyCode === 32) {
       evt.preventDefault();
       this.setState({ gridDrag: true });
     }
     // undo last point placement
-    if (evt.key==="z" || evt.key==="Z") {
-      if (evt.ctrlKey || evt.metaKey) {
-        this.refs.shapes.undo();
-      }
+    if ((evt.ctrlKey || evt.metaKey) && evt.keyCode === 90) {
+      this.refs.shapes.undo();
     }
   },
 
   keyUp: function(evt) {
-    if (evt.key===" ") {
+    if (evt.keyCode === 32) {
       evt.preventDefault();
       this.setState({ gridDrag: false });
     }

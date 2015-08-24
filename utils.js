@@ -239,17 +239,22 @@ var formQuadratic = (function() {
       segments = [];
       curves = [];
       error = 0;
-      for(s=0; s<i; s++) { segments.push(ccurve.split(s*step, (s+1)*step)); }
+
+      for(s=0; s<i; s++) {
+        segments.push(ccurve.split(s*step, (s+1)*step));
+      }
+
+      var qcurve = false;
       segments.forEach(function(ccurve) {
-        var qcurve = naiveQuad(ccurve);
+        qcurve = naiveQuad(ccurve);
         curves.push(qcurve);
         error += cqError(ccurve, qcurve);
       });
-      i++;
-      step = 1/i;
-    }
-    // can we filter out "implied" on-curve points?
 
+      step = 1/i++;
+    }
+
+    // can we filter out "implied" on-curve points?
     // ...
 
     // done.
