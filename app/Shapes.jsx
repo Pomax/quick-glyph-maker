@@ -266,6 +266,21 @@ var Shapes = React.createClass({
           }
         }
 
+        // delete control point?
+        else if (this.activePoint.point.indexOf && this.activePoint.point.indexOf(".")>-1) {
+          var confirmed = confirm("Delete control point? (this cannot be undone");
+          if (confirmed) {
+            var c = this.activePoint.contour;
+            var contour = this.contours[c];
+            var compounds = this.activePoint.point.split(".");
+            var pt = compounds[0];
+            var owner = contour[pt];
+            var aspect = compounds[1];
+            owner[aspect] = false;
+            this.activePoint = false;
+          }
+        }
+
         // turn back into curve point
         else if (p.cache) {
           if (p.cache.front) {
@@ -279,7 +294,6 @@ var Shapes = React.createClass({
 
         // turn into a curve point, by inventing control points
         else {
-          console.log("do it");
           // find the previous and next point(s)
           var c = this.activePoint.contour;
           var contour = this.contours[c];
@@ -297,6 +311,8 @@ var Shapes = React.createClass({
           // invent control points based on (prev--next)
           var dx = 0.55228 * (next.x - prev.x)/2;
           var dy = 0.55228 * (next.y - prev.y)/2;
+
+          if(dx === 0 && dy === 0) { dx = 10; }
 
           p.front = {x: p.x + dx, y: p.y + dy };
           p.back  = {x: p.x - dx, y: p.y - dy };
