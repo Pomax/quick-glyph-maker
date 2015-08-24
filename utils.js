@@ -263,3 +263,52 @@ var formQuadratic = (function() {
 
   return formQuadratic;
 }());
+
+// =================================
+//               ...
+// =================================
+
+function overPoint(point, i, j, x, y) {
+  var dx = Math.abs(x - point.x);
+  var dy = Math.abs(y - point.y);
+  var d  = Math.sqrt(dx*dx + dy*dy);
+  var max = 5;
+  var ret = { contour: i, point: j, pointObj: point };
+  if (d<=max) return ret;
+
+  if(point.front) {
+    dx = Math.abs(x - point.front.x);
+    dy = Math.abs(y - point.front.y);
+    d = Math.sqrt(dx*dx + dy*dy);
+    if (d<=max) {
+      ret.point += ".front";
+      ret.pointObj = point.front;
+      return ret;
+    }
+  }
+
+  if(point.back) {
+    dx = Math.abs(x - point.back.x);
+    dy = Math.abs(y - point.back.y);
+    d = Math.sqrt(dx*dx + dy*dy);
+    if (d<=max) {
+      ret.point += ".back";
+      ret.pointObj = point.back;
+      return ret;
+    }
+  }
+  return false;
+}
+
+function mouseOver(x, y, contours) {
+  var i,cl=contours.length,contour,j,pl,point,dx,dy,d;
+  for (i=0; i<cl; i++) {
+    contour = contours[i];
+    for (j=0; j<contour.length;j++) {
+      point = contour[j];
+      var result = overPoint(point, i, j, x, y);
+      if(result) return result;
+    }
+  }
+  return false;
+}

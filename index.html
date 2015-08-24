@@ -5,27 +5,33 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div id="help" onclick="this.style.display='none';">
+    <div id="help" onclick="(function(c) { c.toggle('collapsed'); } (this.classList))">
       <h2>A quick font glyph maker</h2>
       <h3>Drawing outlines</h3>
       <ul>
-        <li>left click to place a point. Plain points are snapped to the grid.</li>
-        <li>left click-drag to place a curve point. Curve controls do not snap to the grid.</li>
-        <li>right click to close a contour and start a new point "layer".</li>
+        <li>Left click to place a point. Plain points are snapped to the grid.</li>
+        <li>Left click-drag to place a curve point. Curve controls do not snap to the grid.</li>
+        <li>Right click to close a contour and start a new point "layer".</li>
+      </ul>
+      <h3>Keyboard controls</h3>
+      <ul>
+        <li>Press space to turn the input mode into "pan" mode, instead.</li>
+        <li>Left click-drag while in pan mode to explore the off-quad regions</li>
+        <li>Press cmd-z (OSX) or ctrl-z (Windows) to undo point placement. Note that there is no "redo".</li>
       </ul>
       <h3>Modifying outlines</h3>
       <ul>
-        <li>left click-drag to move an existing point</li>
-        <li>left click to turn a curve point into a plain point (click again to turn back into curve point)</li>
+        <li>Left click-drag to move an existing point.</li>
+        <li>Left click a point with curve controls to turn it into a plain point.</li>
+        <li>Left click a plain point to either restore its previous control points, or invent ones if there were none previously.</li>
       </ul>
-      <p>plain points cannot be autoconverted to curve points quite yet, but it's in the works.</p>
       <h3>Flattening and getting the outline data</h3>
       <ul>
-        <li>click "save" and give the glyph outline a name.</li>
+        <li>Click "save" and give the glyph outline a name.</li>
         <li>All contours will get unified (using Paper.js), and the resulting outline is given as SVG path, for pasting in an SVG skeleton, as well as TTX XML form for pasting into a .ttx source file.</li>
-        <li>You can load this shape back up by pressing its associated button. These are <strong>not</strong> preserved across page reloads at the moment.</li>
+        <li>You can load this shape back up by pressing its associated button. These are backed by localStorage, and are preserved across reloads.</li>
       </ul>
-      <p class="note">Click this text to get rid of the instructions forever (or until you inspect-element and remove "display:none", I guess)</p>
+      <p class="note">Click this text to collapse the instructions, or reveal them if collapsed.</p>
     </div>
 
     <div id="app"></div>

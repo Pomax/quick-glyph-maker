@@ -1,9 +1,16 @@
 var App = React.createClass({
+  statics: {
+    glyphMapKey: "quick-glyph-maker-project"
+  },
   getInitialState: function() {
+    var glyphmap = GlyphMap.check(App.glyphMapKey);
+    if (!glyphmap) {
+      glyphmap = new GlyphMap(this.props.width, this.props.height, App.glyphMapKey);
+    }
     return {
       divisions: 10,
       glyphName: false,
-      glyphmap: new GlyphMap(this.props.width, this.props.height)
+      glyphmap: glyphmap
     };
   },
   render: function() {

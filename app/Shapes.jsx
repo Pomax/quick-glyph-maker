@@ -1,49 +1,3 @@
-function overPoint(point, i, j, x, y) {
-  var dx = Math.abs(x - point.x);
-  var dy = Math.abs(y - point.y);
-  var d  = Math.sqrt(dx*dx + dy*dy);
-  var max = 5;
-  var ret = { contour: i, point: j, pointObj: point };
-  if (d<=max) return ret;
-
-  if(point.front) {
-    dx = Math.abs(x - point.front.x);
-    dy = Math.abs(y - point.front.y);
-    d = Math.sqrt(dx*dx + dy*dy);
-    if (d<=max) {
-      ret.point += ".front";
-      ret.pointObj = point.front;
-      return ret;
-    }
-  }
-
-  if(point.back) {
-    dx = Math.abs(x - point.back.x);
-    dy = Math.abs(y - point.back.y);
-    d = Math.sqrt(dx*dx + dy*dy);
-    if (d<=max) {
-      ret.point += ".back";
-      ret.pointObj = point.back;
-      return ret;
-    }
-  }
-  return false;
-}
-
-function mouseOver(x, y, contours) {
-  var i,cl=contours.length,contour,j,pl,point,dx,dy,d;
-  for (i=0; i<cl; i++) {
-    contour = contours[i];
-    for (j=0; j<contour.length;j++) {
-      point = contour[j];
-      var result = overPoint(point, i, j, x, y);
-      if(result) return result;
-    }
-  }
-  return false;
-}
-
-
 var Shapes = React.createClass({
   getInitialState: function() {
     this.clear();
@@ -76,7 +30,6 @@ var Shapes = React.createClass({
       contour: contour,
       pid: pid
     };
-    console.log(this.activePoint);
   },
 
   load: function(d) {
@@ -184,7 +137,7 @@ var Shapes = React.createClass({
       // 1) start dragging a point around?
       this.activePoint = false;
       var over = mouseOver(this.props.mouseX, this.props.mouseY, this.contours);
-      if (over) { this.activePoint = over.pointObj; }
+      if (over) { this.activePoint = over; }
 
       // 2) nope. Just place a point.
       else {
@@ -217,8 +170,8 @@ var Shapes = React.createClass({
 
       // 1) moving existing point ?
       if (this.activePoint) {
-        var p = this.activePoint;
-        var db={x:0,y:0}, df={x:0,y:0};
+        var p = this.activePoint.pointObj;
+        var db = {x:0,y:0}, df = {x:0,y:0};
         if (p.back) { db.x = p.x - p.back.x; db.y = p.y - p.back.y; }
         if (p.front) { df.x = p.front.x - p.x; df.y = p.front.y - p.y; }
         p.x = this.props.mouseX;
@@ -298,28 +251,58 @@ var Shapes = React.createClass({
     else {
       // mouseclick on a repositionable point?
       if (this.activePoint && !this.mousemoved) {
+        var p = this.activePoint.pointObj;
+
         // turn into plain point
-        if(!this.activePoint.cache) {
-          this.activePoint.cache = {};
-          if (this.activePoint.front) {
-            this.activePoint.cache.front = this.activePoint.front;
-            this.activePoint.front = false;
+        if((p.front || p.back) && !p.cache) {
+          p.cache = {};
+          if (p.front) {
+            p.cache.front = p.front;
+            p.front = false;
           }
-          if (this.activePoint.back) {
-            this.activePoint.cache.back = this.activePoint.back;
-            this.activePoint.back = false;
+          if (p.back) {
+            p.cache.back = p.back;
+            p.back = false;
           }
         }
-        // turn into curve point
-        else if (this.activePoint.cache) {
-          if (this.activePoint.cache.front) {
-            this.activePoint.front = this.activePoint.cache.front;
+
+        // turn back into curve point
+        else if (p.cache) {
+          if (p.cache.front) {
+            p.front = p.cache.front;
           }
-          if (this.activePoint.cache.back) {
-            this.activePoint.back = this.activePoint.cache.back;
+          if (p.cache.back) {
+            p.back = p.cache.back;
           }
-          this.activePoint.cache = false;
+          p.cache = false;
         }
+
+        // turn into a curve point, by inventing control points
+        else {
+          console.log("do it");
+          // find the previous and next point(s)
+          var c = this.activePoint.contour;
+          var contour = this.contours[c];
+          var clen = contour.length;
+          var cpt = this.activePoint.point;
+
+          var ppt = cpt - 1;
+          if (cpt === 0) { ppt = clen - 1; }
+          var prev = contour[ppt];
+
+          var npt = cpt + 1;
+          if (npt >= clen) { npt = 0; }
+          var next = contour[npt];
+
+          // invent control points based on (prev--next)
+          var dx = 0.55228 * (next.x - prev.x)/2;
+          var dy = 0.55228 * (next.y - prev.y)/2;
+
+          p.front = {x: p.x + dx, y: p.y + dy };
+          p.back  = {x: p.x - dx, y: p.y - dy };
+        }
+
+        this.setState({ contours: this.contours });
       }
     }
     var cpt = this.points.slice(-2)[0];
