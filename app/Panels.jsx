@@ -49,6 +49,7 @@ var Panels = React.createClass({
       gridY: this.state.gridY,
       offsetX: this.state.offsetX,
       offsetY: this.state.offsetY,
+      invalidate: this.invalidate,
       className: "shaping panel"
     }}/>;
 
@@ -98,6 +99,13 @@ var Panels = React.createClass({
     var path = unify(w, h, this.refs.shapes.contours);
     this.setState({ dpreview: path });
     return path;
+  },
+
+  invalidate: function() {
+    this.setState({
+      dpreview: false,
+      TTX: false
+    });
   },
 
   clear: function() {

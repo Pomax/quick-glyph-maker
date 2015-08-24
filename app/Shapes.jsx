@@ -215,7 +215,6 @@ var Shapes = React.createClass({
       this.mousemoved = true;
 
       // 1) moving existing point ?
-
       if (this.activePoint) {
         var p = this.activePoint;
         var db={x:0,y:0}, df={x:0,y:0};
@@ -225,6 +224,7 @@ var Shapes = React.createClass({
         p.y = this.props.mouseY;
         if (p.back) { p.back.x = p.x - db.x; p.back.y = p.y - db.y; }
         if (p.front) { p.front.x = p.x + df.x; p.front.y = p.y + df.y; }
+        this.props.invalidate();
       }
 
       // 2) determine curvature control point
