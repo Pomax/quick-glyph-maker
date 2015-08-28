@@ -23,6 +23,8 @@ var Panels = React.createClass({
     // this is simply necessary because React doesn't have it
     var svgnode = React.findDOMNode(this.refs.handler);
     svgnode.addEventListener("wheel", this.scroll);
+
+    this.refs.shapes.bindGrid(this.refs.grid);
   },
 
   componentDidUpdate: function() {
@@ -50,6 +52,7 @@ var Panels = React.createClass({
       offsetX: this.state.offsetX,
       offsetY: this.state.offsetY,
       invalidate: this.invalidate,
+      pointHighlighted: this.pointHighlighted,
       className: "shaping panel"
     }}/>;
 

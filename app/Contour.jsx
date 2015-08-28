@@ -2,7 +2,6 @@ var Contour = React.createClass({
 
   getInitialState: function() {
     return {
-      cid: this.props.cid,
       points: this.props.points || []
     };
   },
@@ -14,14 +13,19 @@ var Contour = React.createClass({
       x = x.x;
     }
 
-    var over = overPoint({x:this.props.mx, y:this.props.my}, this.props.cid, pid, x, y);
+    var isControl = !!pid.indexOf;
+
+    var over = overPoint({
+      x:this.props.mx,
+      y:this.props.my
+    }, this.props.cid, pid, x, y);
 
     return <circle {...{
       cx: x || 0,
       cy: y || 0,
       r: 5,
-      fill: !!over ? "blue" : "red",
-      stroke: !!over ? "blue" : "red",
+      fill: !!over ? "blue" : isControl ? "green" : "red",
+      stroke: !!over ? "blue" : isControl ? "green" : "red",
       strokeWidth: 2,
       style: { zIndex: 2 }
     }}/>;
