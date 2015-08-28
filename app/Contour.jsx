@@ -1,12 +1,6 @@
 var Contour = React.createClass({
 
-  getInitialState: function() {
-    return {
-      points: this.props.points || []
-    };
-  },
-
-  formPoint: function(x, y, pid) {
+  formPoint: function(x, y, pid, preview) {
     if (pid === undefined) {
       pid = y;
       y = x.y;
@@ -24,8 +18,8 @@ var Contour = React.createClass({
       cx: x || 0,
       cy: y || 0,
       r: 5,
-      fill: !!over ? "blue" : isControl ? "green" : "red",
-      stroke: !!over ? "blue" : isControl ? "green" : "red",
+      fill: preview ? "lightgrey" : !!over ? "blue" : isControl ? "green" : "red",
+      stroke: preview ? "lightgrey" : !!over ? "blue" : isControl ? "green" : "red",
       strokeWidth: 2,
       style: { zIndex: 2 }
     }}/>;
@@ -40,9 +34,10 @@ var Contour = React.createClass({
   },
 
   render: function() {
-    var points = this.state.points;
+    var points = this.props.points;
     var markers = points.map(function(p, pid) {
-      var marks = [this.formPoint(p.x, p.y, pid)];
+      var preview = (pid===points.length-1) && !!this.props.preview;
+      var marks = [this.formPoint(p.x, p.y, pid, preview)];
       if (p._front) p.front = p._front;
       if (p.front || p.back) {
         // lines

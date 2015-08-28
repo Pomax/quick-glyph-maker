@@ -112,6 +112,17 @@ function kappa(p, r, backward) {
   };
 }
 
+function inventKappaControl(prev, curr) {
+  var ik = 1.0 / 0.55228;
+  // projected singular control
+  var projected = {
+    x: prev.x + ik * (prev.front.x - prev.x), 
+    y: prev.y + ik * (prev.front.y - prev.y)
+  };
+  // reprojected onto projected--curr
+  return kappa(curr, projected);
+}
+
 function pointToSVGPath(points) {
   return function(p, idx) {
     var p1 = points[idx-1], c1, c2;

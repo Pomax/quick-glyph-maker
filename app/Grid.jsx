@@ -129,15 +129,6 @@ var Grid = React.createClass({
     return <g>
       <g transform={ "translate(" + o.x + "," + o.y + ")"}>
         { this.generateDivisions() }
-         <path fill="none" stroke="rgb(200,150,200)" d={ ['M', snapped.x, -o.y, 'L', snapped.x, this.props.height - o.y].join(' ') } />
-        <path fill="none" stroke="rgb(200,150,200)" d={ ['M', -o.x, snapped.y, 'L', this.props.width - o.x, snapped.y].join(' ') } />
-        <circle {...{
-          r: 10,
-          cx: snapped.x,
-          cy: snapped.y,
-          fill: "none",
-          stroke: this.props.curve ? "red" : "black"
-        }}/>
       </g>
     </g>;
   },

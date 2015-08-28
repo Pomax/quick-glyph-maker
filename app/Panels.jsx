@@ -43,6 +43,8 @@ var Panels = React.createClass({
     className = className.length > 0 ? className.join(' ') : false;
 
     var shapes = <Shapes ref="shapes" {...{
+      width: this.props.width,
+      height: this.props.height,
       mouseX: this.state.mouseX,
       mouseY: this.state.mouseY,
       gridX: this.state.gridX,

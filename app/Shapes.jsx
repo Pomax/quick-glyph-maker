@@ -20,36 +20,78 @@ var Shapes = React.createClass({
       }}/>;
     }.bind(this));
 
-/*
+
     // also add the contour for "what the next thing will look like"
+    var nContour = false;
     if (this.state.contours.length > 0) {
       var temp = this.state.contours.slice(-1)[0];
       if(temp) {
         temp = temp.slice(-1)[0];
         if (temp) {
-          temp = [temp];
-          temp.push({
-            x: this.props.mouseX,
-            y: this.props.mouseY
-          });
-          temp = <Contour {...{
-            points: temp
+          // create a contour between [temp] and this coordinate
+          var pts = {
+            x: this.props.gridX,
+            y: this.props.gridY,
+            back: false
+          };
+          // invent a control point if we must
+          if (temp.front) {
+            pts.back = inventKappaControl(temp, pts);
+          }
+          temp = [temp, pts];
+          nContour = <Contour {...{
+            points: temp,
+            cid: -1,
+            ref: '-1-2',
+            key: "c-1",
+            mx: this.props.mouseX,
+            my: this.props.mouseY,
+            setActivePoint: this.setActivePoint,
+            preview: true
           }}/>;
         }
       }
     }
-*/
+
     var ox = this.props.offsetX;
     var oy = this.props.offsetY;
-    var group = <g transform={"translate("+ox+","+oy+")"}>{contours}{temp}</g>;
+
+    var snapped = {
+      x: this.props.gridX,
+      y: this.props.gridY
+    };
+
+    var cursor = false;
+    if(!this.state.hideCursor) {
+      cursor = [
+        <path fill="none" stroke="rgb(200,150,200)" d={ ['M', snapped.x, -oy, 'L', snapped.x, this.props.height - oy].join(' ') } />,
+        <path fill="none" stroke="rgb(200,150,200)" d={ ['M', -ox, snapped.y, 'L', this.props.width - ox, snapped.y].join(' ') } />,
+        <circle {...{
+          r: 10,
+          cx: snapped.x,
+          cy: snapped.y,
+          fill: "none",
+          stroke: this.props.curve ? "red" : "black"
+        }}/>
+      ];
+    }
+
+    var group = <g transform={"translate("+ox+","+oy+")"}>
+      {contours}
+      {nContour}
+      {cursor}
+    </g>;
+
     return group;
   },
 
   setActivePoint: function(contour, pid) {
-    this.activePoint = {
-      contour: contour,
-      pid: pid
-    };
+    this.setState({
+      activePoint: {
+        contour: contour,
+        pid: pid
+      }
+    });
   },
 
   load: function(d) {
@@ -158,10 +200,31 @@ var Shapes = React.createClass({
     // place point, or drag point around
     if (evt.button === 0) {
 
-      // 1) start dragging a point around?
-      this.activePoint = false;
+      // 1) overlapping action?
       var over = mouseOver(this.props.mouseX, this.props.mouseY, this.contours);
-      if (over) { this.activePoint = over; }
+      if (over) {
+
+        // close shape
+        if (over.pointObj === this.points[0]) {
+          if (this.point.front && !this.points[0].back) {
+            // curve-correct the last point.
+            var p = this.point;
+            var c1 = p.front;
+            var ik = 1 / 0.55228;
+            var real = {
+              x: p.x + (c1.x-p.x)*ik,
+              y: p.y + (c1.y-p.y)*ik
+            };
+            var corrected = kappa(this.points[0], real);
+            this.points[0].back = corrected;
+          }
+          this.closeShape();
+          this.startShape();
+        }
+
+        //start dragging a point around?
+        else { this.setState({ activePoint: over }); }
+      }
 
       // 2) nope. Just place a point.
       else {
@@ -193,8 +256,8 @@ var Shapes = React.createClass({
       this.mousemoved = true;
 
       // 1) moving existing point ?
-      if (this.activePoint) {
-        var p = this.activePoint.pointObj;
+      if (this.state.activePoint) {
+        var p = this.state.activePoint.pointObj;
         var db = {x:0,y:0}, df = {x:0,y:0};
         if (p.back) { db.x = p.x - p.back.x; db.y = p.y - p.back.y; }
         if (p.front) { df.x = p.front.x - p.x; df.y = p.front.y - p.y; }
@@ -244,38 +307,20 @@ var Shapes = React.createClass({
             }
           }
         }
-        this.setState({ points: this.points });
+        this.setState({
+          hideCursor: true,
+          points: this.points
+        });
       }
 
     }
   },
 
   mouseUp: function(evt) {
-    if (this.mousemoved ) {
-      //console.log("drag");
-    } else {
-      //console.log("click");
-    }
-    if (evt.button !== 0) {
-      if (this.point.front && !this.points[0].back) {
-        // curve-correct the last point.
-        var p = this.point;
-        var c1 = p.front;
-        var ik = 1 / 0.55228;
-        var real = {
-          x: p.x + (c1.x-p.x)*ik,
-          y: p.y + (c1.y-p.y)*ik
-        };
-        var corrected = kappa(this.points[0], real);
-        this.points[0].back = corrected;
-      }
-      this.closeShape();
-      this.startShape();
-    }
-    else {
+    if (evt.button === 0) {
       // mouseclick on a repositionable point?
-      if (this.activePoint && !this.mousemoved) {
-        var p = this.activePoint.pointObj;
+      if (this.state.activePoint && !this.mousemoved) {
+        var p = this.state.activePoint.pointObj;
 
         // turn into plain point
         if((p.front || p.back) && !p.cache) {
@@ -291,17 +336,19 @@ var Shapes = React.createClass({
         }
 
         // delete control point?
-        else if (this.activePoint.point.indexOf && this.activePoint.point.indexOf(".")>-1) {
+        else if (this.state.activePoint.point.indexOf && this.state.activePoint.point.indexOf(".")>-1) {
           var confirmed = confirm("Delete control point? (this cannot be undone");
           if (confirmed) {
-            var c = this.activePoint.contour;
+            var c = this.state.activePoint.contour;
             var contour = this.contours[c];
-            var compounds = this.activePoint.point.split(".");
+            var compounds = this.state.activePoint.point.split(".");
             var pt = compounds[0];
             var owner = contour[pt];
             var aspect = compounds[1];
             owner[aspect] = false;
-            this.activePoint = false;
+            this.setState({
+              activePoint: false
+            });
           }
         }
 
@@ -319,10 +366,10 @@ var Shapes = React.createClass({
         // turn into a curve point, by inventing control points
         else {
           // find the previous and next point(s)
-          var c = this.activePoint.contour;
+          var c = this.state.activePoint.contour;
           var contour = this.contours[c];
           var clen = contour.length;
-          var cpt = this.activePoint.point;
+          var cpt = this.state.activePoint.point;
 
           var ppt = cpt - 1;
           if (cpt === 0) { ppt = clen - 1; }
@@ -351,7 +398,13 @@ var Shapes = React.createClass({
       cpt.front = cpt._front;
       delete cpt._front;
     }
+
     this.mousedown = false;
+
+    this.setState({
+      hideCursor: false,
+      activePoint: false
+    });
   }
 
 });
