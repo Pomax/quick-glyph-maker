@@ -6,7 +6,7 @@ var Controls = React.createClass({
 
         <div className="up-down">
           <button onClick={this.props.decRes}>Decrease resolution</button>
-          <button onClick={this.props.incResaves}>Increase resolution</button>
+          <button onClick={this.props.incRes}>Increase resolution</button>
         </div>
 
         <div className="glyph properties">

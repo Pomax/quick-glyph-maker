@@ -27,7 +27,7 @@ var App = React.createClass({
 
     return (
       <div>
-        <Panels ref="panels" width={this.props.width} height={this.props.height} divisions={this.state.divisions}/>
+        <Panels ref="panels" width={this.props.width} height={this.props.height} divisions={this.state.divisions} />
         <Controls glyphName={this.state.glyphName} newGlyph={this.newGlyph} decRes={this.decRes} incRes={this.incRes} load={this.load} save={this.save}/>
         <Project ref="project" glyphmap={this.state.glyphmap} loadGlyph={this.load} />
         {xmlForm}
@@ -44,7 +44,7 @@ var App = React.createClass({
   },
 
   decRes: function() {
-    this.setState({ divisions: this.state.divisions >>> 1 || 0});
+    this.setState({ divisions: Math.max(this.state.divisions >>> 1, 2)});
   },
 
   incRes: function() {
