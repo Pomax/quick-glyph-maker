@@ -19,9 +19,29 @@ var Shapes = React.createClass({
         setActivePoint: this.setActivePoint
       }}/>;
     }.bind(this));
+
+/*
+    // also add the contour for "what the next thing will look like"
+    if (this.state.contours.length > 0) {
+      var temp = this.state.contours.slice(-1)[0];
+      if(temp) {
+        temp = temp.slice(-1)[0];
+        if (temp) {
+          temp = [temp];
+          temp.push({
+            x: this.props.mouseX,
+            y: this.props.mouseY
+          });
+          temp = <Contour {...{
+            points: temp
+          }}/>;
+        }
+      }
+    }
+*/
     var ox = this.props.offsetX;
     var oy = this.props.offsetY;
-    var group = <g transform={"translate("+ox+","+oy+")"}>{contours}</g>;
+    var group = <g transform={"translate("+ox+","+oy+")"}>{contours}{temp}</g>;
     return group;
   },
 
@@ -102,9 +122,13 @@ var Shapes = React.createClass({
       var contours = this.contours;
       last = contours.length - 1;
       contours.splice(last,1);
-      this.points = contours.slice(-1)[0];
-      this.points.closed = false;
-      this.setState({ contours: this.contours });
+      if (contours.length>0) {
+        this.points = contours.slice(-1)[0];
+        this.points.closed = false;
+      } else {
+        this.points = [];
+        this.contours = [this.points];
+      }
     }
 
     // remove last added point
