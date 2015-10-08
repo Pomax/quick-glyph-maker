@@ -93,6 +93,11 @@ function unify(w, h, contours) {
 //               ...
 // =================================
 
+function rnd(v) {
+  if (typeof v !== "number") return v;
+  return Math.round(v);
+}
+
 function project(p, l1, l2) {
   var m = (l2.y - l1.y) / (l2.x - l1.x);
       b = l1.y - (m * l1.x),
@@ -116,7 +121,7 @@ function inventKappaControl(prev, curr) {
   var ik = 1.0 / 0.55228;
   // projected singular control
   var projected = {
-    x: prev.x + ik * (prev.front.x - prev.x), 
+    x: prev.x + ik * (prev.front.x - prev.x),
     y: prev.y + ik * (prev.front.y - prev.y)
   };
   // reprojected onto projected--curr
@@ -127,7 +132,7 @@ function pointToSVGPath(points) {
   return function(p, idx) {
     var p1 = points[idx-1], c1, c2;
 
-    if(!p1) { return ['L',p.x,p.y].join(' '); }
+    if(!p1) { return ['L',p.x,p.y].map(rnd).join(' '); }
 
     if (p1.front || p.back) {
       if (p1.front && p.back) {
@@ -142,10 +147,10 @@ function pointToSVGPath(points) {
         c1 = p1.front;
         c2 = p1.front;
       }
-      return ['C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].join(' ');
+      return ['C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].map(rnd).join(' ');
     }
 
-    return ['L',p.x,p.y].join(' ');
+    return ['L',p.x,p.y].map(rnd).join(' ');
   };
 }
 
@@ -158,7 +163,7 @@ function pointsToSVGPath(points, closed) {
   var path = points.map(pointToSVGPath(points));
   if (points[0]) {
     var p = points[0];
-    path = ['M',p.x,p.y].concat(path.slice(1)).join(' ');
+    path = ['M',p.x,p.y].concat(path.slice(1)).map(rnd).join(' ');
     if (closed) {
       var l = points.slice(-1)[0];
       if (p.back || l.front) {
@@ -175,7 +180,7 @@ function pointsToSVGPath(points, closed) {
           c1 = l.front;
           c2 = l.front;
         }
-        path += [' C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].join(' ');
+        path += [' C',c1.x,c1.y,c2.x,c2.y,p.x,p.y].map(rnd).join(' ');
       }
       path += ' Z';
     }
@@ -201,6 +206,8 @@ function dist(p1, p2) {
 }
 
 var formQuadratic = (function() {
+  var cqErrorMax = 10;
+
   function lli8(x1,y1,x2,y2,x3,y3,x4,y4) {
     var nx=(x1*y2-y1*x2)*(x3-x4)-(x1-x2)*(x3*y4-y3*x4),
         ny=(x1*y2-y1*x2)*(y3-y4)-(y1-y2)*(x3*y4-y3*x4),
@@ -233,25 +240,25 @@ var formQuadratic = (function() {
     var qcurve = naiveQuad(x1,y1,x2,y2,x3,y3,x4,y4);
 
     // already quadratic enough?
-    if(cqError(ccurve, qcurve) < 2) {
+    if(cqError(ccurve, qcurve) < cqErrorMax) {
       return [qcurve];
     }
 
     // no: start splitting
     var i = 2,
         error = 999,
-        maxError = 5,
         segments,
         curves,
         s,
         step=1/i;
 
-    while (error > maxError) {
+    while (error > cqErrorMax) {
       segments = [];
       curves = [];
       error = 0;
 
       for(s=0; s<i; s++) {
+        if ((s+1)*step > 1) continue;
         segments.push(ccurve.split(s*step, (s+1)*step));
       }
 
@@ -283,7 +290,7 @@ function overPoint(point, i, j, x, y) {
   var dx = Math.abs(x - point.x);
   var dy = Math.abs(y - point.y);
   var d  = Math.sqrt(dx*dx + dy*dy);
-  var max = 5;
+  var max = 10;
   var ret = { contour: i, point: j, pointObj: point };
   if (d<=max) return ret;
 

@@ -12,8 +12,8 @@ var Project = React.createClass({
       load(n, gm.get(n));
     };
 
-    var buttons = this.state.glyphmap.getNames().map(function(n) {
-      return <button onClick={function() { loadGlyph(n) }}>{n}</button>
+    var buttons = this.state.glyphmap.getNames().map(function(n,position) {
+      return <button key={position} onClick={function() { loadGlyph(n) }}>{n}</button>
     });
 
     return <div className="project">

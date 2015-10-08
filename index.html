@@ -5,7 +5,7 @@
     <link rel="stylesheet" href="style.css">
   </head>
   <body>
-    <div id="help" onclick="(function(c) { c.toggle('collapsed'); } (this.classList))">
+    <div id="help" class="collapsed" onclick="(function(c) { c.toggle('collapsed'); } (this.classList))">
       <h2>A quick font glyph maker</h2>
       <h3>Drawing outlines</h3>
       <ul>
@@ -51,6 +51,8 @@
 
     <script src="react-with-addons.js"></script>
     <script src="JSXTransformer.js"></script>
+
+    <script type="text/jsx" src="app/mixins/mousemixin.js"></script>
 
     <script type="text/jsx" src="app/Shapes.jsx"></script>
     <script type="text/jsx" src="app/Grid.jsx"></script>
